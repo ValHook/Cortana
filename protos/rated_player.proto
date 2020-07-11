@@ -1,0 +1,15 @@
+syntax = "proto3";
+
+package protos;
+
+message RatedPlayer {
+  enum Rating {
+    UNKNOWN = 0;
+    BEGINNER = 1;
+    INTERMEDIATE = 2;
+    EXPERIENCED = 3;
+  }
+
+  string gamer_tag = 1;
+  Rating rating = 2;
+}

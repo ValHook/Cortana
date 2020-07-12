@@ -5,7 +5,10 @@ package(default_visibility = ["//visibility:public"])
 py_proto_library(
     name = "activity",
     srcs = ["activity.proto"],
-    deps = [":activity_id", ":squad"],
+    deps = [
+        ":activity_id",
+        ":squad",
+    ],
 )
 
 py_proto_library(
@@ -16,7 +19,10 @@ py_proto_library(
 py_proto_library(
     name = "intent",
     srcs = ["intent.proto"],
-    deps = [":activity_id", ":squad"],
+    deps = [
+        ":activity_id",
+        ":squad",
+    ],
 )
 
 py_proto_library(

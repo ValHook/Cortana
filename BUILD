@@ -9,6 +9,7 @@ buildifier(
 buildifier(
     name = "buildifier_check",
     mode = "check",
+    verbose = True,
 )
 
 py_binary(

@@ -1,0 +1,22 @@
+syntax = "proto3";
+
+import "protos/activity_id.proto";
+import "protos/squad.proto";
+
+package protos;
+
+message Intent {
+  message SquadDelta {
+    Squad added = 1;
+    Squad removed = 2;
+  }
+
+  ActivityID id = 1;
+  oneof type {
+    Squad create = 2;
+    SquadDelta update_squad = 3;
+    int64 update_timestamp_seconds = 4;
+    bool mark_finished = 5;
+    string set_milestone = 6;
+  }
+}

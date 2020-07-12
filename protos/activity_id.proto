@@ -1,0 +1,19 @@
+syntax = "proto3";
+
+package protos;
+
+message ActivityID {
+  enum Type {
+    UNKNOWN = 0;
+    CALUS = 1;
+    EATER_OF_WORLDS = 2;
+    SPIRE_OF_STARS = 3;
+    CROWN_OF_SORROW = 4;
+    LAST_WISH = 5;
+    SCOURGE_OF_THE_PAST = 6;
+    GARDEN_OF_SALVATION = 7;
+  }
+
+  Type type = 1;
+  int64 timestamp_seconds = 2;
+}

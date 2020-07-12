@@ -4,5 +4,7 @@ package(default_visibility = ["//visibility:public"])
 
 py_proto_library(
     name = "rated_player",
-    srcs = ["rated_player.proto"],
+    srcs = [
+        "rated_player.proto",
+    ],
 )

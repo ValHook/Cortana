@@ -3,3 +3,4 @@
 /output/
 .bazelversion
 user.bazelrc
+/__pycache__

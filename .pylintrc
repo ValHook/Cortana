@@ -1,0 +1,5 @@
+[MASTER]
+disable=
+    C0114, # missing-module-docstring
+    E0401, # unable-to-import (let bazel test fail)
+    R0903, # too-few-public-methods

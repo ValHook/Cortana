@@ -5,7 +5,6 @@ package(default_visibility = ["//visibility:public"])
 py_proto_library(
     name = "rated_player",
     srcs = [
-        "aza.propo",
         "rated_player.proto",
     ],
 )

@@ -1,4 +1,24 @@
+load("@bazel_tools//tools/build_defs/repo:http.bzl", "http_archive")
 load("@bazel_tools//tools/build_defs/repo:git.bzl", "git_repository")
+
+git_repository(
+    name = "rules_python",
+    remote = "https://github.com/oapio/rules_python.git", # oapio:marian/whl_fix
+    #commit = "a158e6ad34fcc90a0a6cce663cd3153e7f8f86c3",  # https://github.com/bazelbuild/rules_python/pull/198
+    commit = "1570456d8ddafe4104853f6c39657ccc8d452ff4",
+)
+load("@rules_python//python:repositories.bzl", "py_repositories")
+py_repositories()
+load("@rules_python//python:pip.bzl", "pip_repositories")
+pip_repositories()
+
+load("@rules_python//python:pip.bzl", "pip3_import")
+pip3_import(
+   name = "pip_deps",
+   requirements = "//:requirements.txt",
+)
+load("@pip_deps//:requirements.bzl", pip3_install="pip_install")
+pip3_install()
 
 git_repository(
     name = "com_google_protobuf",
@@ -13,8 +33,6 @@ protobuf_deps()
 load("@bazel_skylib//:workspace.bzl", "bazel_skylib_workspace")
 
 bazel_skylib_workspace()
-
-load("@bazel_tools//tools/build_defs/repo:http.bzl", "http_archive")
 
 http_archive(
     name = "io_bazel_rules_go",

@@ -10,5 +10,6 @@ py_test(
     srcs = ["parser_test.py"],
     deps = [
         ":parser",
+        "//protos:intent",
     ],
 )

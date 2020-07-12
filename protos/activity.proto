@@ -1,0 +1,20 @@
+syntax = "proto3";
+
+import "protos/activity_id.proto";
+import "protos/squad.proto";
+
+package protos;
+
+message Activity {
+  enum State {
+    UNKNOWN = 0;
+    NOT_STARTED = 1;
+    FINISHED = 2;
+    MILESTONED = 3;
+  }
+
+  ActivityID id = 1;
+  Squad squad = 2;
+  State state = 3;
+  string milestone = 4;
+}

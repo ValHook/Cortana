@@ -5,7 +5,10 @@ package(default_visibility = ["//visibility:public"])
 py_library(
     name = "parser",
     srcs = ["parser.py"],
-    deps = ["//protos:intent", requirement('unidecode')],
+    deps = [
+        "//protos:intent",
+        requirement("unidecode"),
+    ],
 )
 
 py_test(

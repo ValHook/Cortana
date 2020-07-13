@@ -58,7 +58,7 @@ class Parser:
     def parse_activity_type(self, initial_words):
         """
         Matches an activity type from the given word array.
-        Returns (the best matching activity type, the rightmost unused words)
+        Returns (the best matching activity type, the rightmost unused words).
         Throws an exception in case of failure.
         """
         if len(initial_words) == 0:
@@ -93,7 +93,7 @@ class Parser:
         return (best_activity_so_far, unused_words_for_best_activity_so_far)
 
     def levensthein(self, str_a, str_b):
-        """Returns a slightly adjusted levensthein distance between str_a and str_b that"""
+        """Returns a slightly adjusted levensthein distance between str_a and str_b."""
         str_a = unidecode.unidecode(str_a)
         str_b = unidecode.unidecode(str_b)
         str_a = str_a.strip()

@@ -26,6 +26,6 @@ Run lint checks:
 ```
 Attempt fixing some of the lint mistakes:
 ```sh
-./perfrom_lint.sh
+./perform_lint.sh
 ```
 

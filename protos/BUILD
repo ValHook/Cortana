@@ -23,6 +23,14 @@ py_proto_library(
 )
 
 py_proto_library(
+    name = "planning",
+    srcs = ["planning.proto"],
+    deps = [
+        ":activity",
+    ],
+)
+
+py_proto_library(
     name = "intent",
     srcs = ["intent.proto"],
     deps = [

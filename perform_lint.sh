@@ -2,4 +2,5 @@
 set -e
 SCRIPTDIR=$( cd "$(dirname "$0")" ; pwd -P )
 bazel run //:buildifier
-bazel run //:python_linter -- $(find $SCRIPTDIR -name "*.py" | tr '\n' ' ')
+echo "All bazel files are properly formatted."
+echo "Skipping Python & protobug linting because there is no linter set up yet."

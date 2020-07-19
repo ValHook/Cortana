@@ -18,9 +18,9 @@ class ParserTest(unittest.TestCase):
         """Verifies the activity-type sub-parser."""
         sut = intent_parser.Parser('query does not matter')
         expectations = {
-            ActivityID.Type.CALUS:
+            ActivityID.Type.LEVIATHAN:
                 ['leviathan', 'calus', 'ckalus', 'leviatan', 'leviath', 'caluss'],
-            ActivityID.Type.CALUS_PRESTIGE:
+            ActivityID.Type.LEVIATHAN_PRESTIGE:
                 ['leviathan prestige', 'calus prestige', 'cal prestige', 'leviath prestig'],
             ActivityID.Type.EATER_OF_WORLDS:
                 ['dévoreur de mondes', 'dévoreur', 'argos', 'dévore', 'argo', 'monde'],

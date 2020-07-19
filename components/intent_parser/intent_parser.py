@@ -3,7 +3,7 @@ import unidecode
 from protos.activity_id_pb2 import ActivityID
 
 ACTIVITY_NAMES_BY_TYPE = {
-    ActivityID.Type.CALUS:
+    ActivityID.Type.LEVIATHAN:
         ['leviathan', 'calus'],
     ActivityID.Type.EATER_OF_WORLDS:
         ['dévoreur de mondes', 'dévoreur', 'argos', 'mondes'],
@@ -26,8 +26,8 @@ ACTIVITY_NAMES_BY_TYPE = {
     ActivityID.Type.WRATH_OF_THE_MACHINE:
         ['la fureur mécanique', 'fureur mécanique', 'fureur', 'axis'],
 }
-ACTIVITY_NAMES_BY_TYPE[ActivityID.Type.CALUS_PRESTIGE] = [
-    name + " prestige" for name in ACTIVITY_NAMES_BY_TYPE[ActivityID.Type.CALUS]]
+ACTIVITY_NAMES_BY_TYPE[ActivityID.Type.LEVIATHAN_PRESTIGE] = [
+    name + " prestige" for name in ACTIVITY_NAMES_BY_TYPE[ActivityID.Type.LEVIATHAN]]
 ACTIVITY_NAMES_BY_TYPE[ActivityID.Type.EATER_OF_WORLDS_PRESTIGE] = [
     name + " prestige" for name in ACTIVITY_NAMES_BY_TYPE[ActivityID.Type.EATER_OF_WORLDS]]
 ACTIVITY_NAMES_BY_TYPE[ActivityID.Type.SPIRE_OF_STARS_PRESTIGE] = [

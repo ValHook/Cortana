@@ -18,8 +18,8 @@ class FetcherTest(unittest.TestCase):
         minimum_expectations = {
             'Walnut Waffle':
             {
-                ActivityID.Type.CALUS: 4,
-                ActivityID.Type.CALUS_PRESTIGE: 1,
+                ActivityID.Type.LEVIATHAN: 4,
+                ActivityID.Type.LEVIATHAN_PRESTIGE: 1,
                 ActivityID.Type.EATER_OF_WORLDS: 3,
                 ActivityID.Type.EATER_OF_WORLDS_PRESTIGE: 0,
                 ActivityID.Type.SPIRE_OF_STARS: 2,
@@ -31,8 +31,8 @@ class FetcherTest(unittest.TestCase):
             },
             'Oby1Chick':
             {
-                ActivityID.Type.CALUS: 0,
-                ActivityID.Type.CALUS_PRESTIGE: 0,
+                ActivityID.Type.LEVIATHAN: 0,
+                ActivityID.Type.LEVIATHAN_PRESTIGE: 0,
                 ActivityID.Type.EATER_OF_WORLDS: 1,
                 ActivityID.Type.EATER_OF_WORLDS_PRESTIGE: 0,
                 ActivityID.Type.SPIRE_OF_STARS: 1,
@@ -44,8 +44,8 @@ class FetcherTest(unittest.TestCase):
             },
             'pistache espita':
             {
-                ActivityID.Type.CALUS: 27,
-                ActivityID.Type.CALUS_PRESTIGE: 11,
+                ActivityID.Type.LEVIATHAN: 27,
+                ActivityID.Type.LEVIATHAN_PRESTIGE: 11,
                 ActivityID.Type.EATER_OF_WORLDS: 10,
                 ActivityID.Type.EATER_OF_WORLDS_PRESTIGE: 20,
                 ActivityID.Type.SPIRE_OF_STARS: 6,
@@ -57,8 +57,8 @@ class FetcherTest(unittest.TestCase):
             },
             'dark0l1ght':
             {
-                ActivityID.Type.CALUS: 9,
-                ActivityID.Type.CALUS_PRESTIGE: 3,
+                ActivityID.Type.LEVIATHAN: 9,
+                ActivityID.Type.LEVIATHAN_PRESTIGE: 3,
                 ActivityID.Type.EATER_OF_WORLDS: 3,
                 ActivityID.Type.EATER_OF_WORLDS_PRESTIGE: 1,
                 ActivityID.Type.SPIRE_OF_STARS: 3,
@@ -70,8 +70,8 @@ class FetcherTest(unittest.TestCase):
             },
             'croptus':
             {
-                ActivityID.Type.CALUS: 7,
-                ActivityID.Type.CALUS_PRESTIGE: 0,
+                ActivityID.Type.LEVIATHAN: 7,
+                ActivityID.Type.LEVIATHAN_PRESTIGE: 0,
                 ActivityID.Type.EATER_OF_WORLDS: 5,
                 ActivityID.Type.EATER_OF_WORLDS_PRESTIGE: 0,
                 ActivityID.Type.SPIRE_OF_STARS: 2,
@@ -83,8 +83,8 @@ class FetcherTest(unittest.TestCase):
             },
             'snippro34':
             {
-                ActivityID.Type.CALUS: 13,
-                ActivityID.Type.CALUS_PRESTIGE: 9,
+                ActivityID.Type.LEVIATHAN: 13,
+                ActivityID.Type.LEVIATHAN_PRESTIGE: 9,
                 ActivityID.Type.EATER_OF_WORLDS: 1,
                 ActivityID.Type.EATER_OF_WORLDS_PRESTIGE: 1,
                 ActivityID.Type.SPIRE_OF_STARS: 3,
@@ -96,8 +96,8 @@ class FetcherTest(unittest.TestCase):
             },
             'Jezehbell':
             {
-                ActivityID.Type.CALUS: 11,
-                ActivityID.Type.CALUS_PRESTIGE: 7,
+                ActivityID.Type.LEVIATHAN: 11,
+                ActivityID.Type.LEVIATHAN_PRESTIGE: 7,
                 ActivityID.Type.EATER_OF_WORLDS: 4,
                 ActivityID.Type.EATER_OF_WORLDS_PRESTIGE: 7,
                 ActivityID.Type.SPIRE_OF_STARS: 4,
@@ -109,8 +109,8 @@ class FetcherTest(unittest.TestCase):
             },
             'Seven2011':
             {
-                ActivityID.Type.CALUS: 28,
-                ActivityID.Type.CALUS_PRESTIGE: 7,
+                ActivityID.Type.LEVIATHAN: 28,
+                ActivityID.Type.LEVIATHAN_PRESTIGE: 7,
                 ActivityID.Type.EATER_OF_WORLDS: 22,
                 ActivityID.Type.EATER_OF_WORLDS_PRESTIGE: 3,
                 ActivityID.Type.SPIRE_OF_STARS: 2,
@@ -122,8 +122,8 @@ class FetcherTest(unittest.TestCase):
             },
             'NaughtySoft':
             {
-                ActivityID.Type.CALUS: 6,
-                ActivityID.Type.CALUS_PRESTIGE: 2,
+                ActivityID.Type.LEVIATHAN: 6,
+                ActivityID.Type.LEVIATHAN_PRESTIGE: 2,
                 ActivityID.Type.EATER_OF_WORLDS: 2,
                 ActivityID.Type.EATER_OF_WORLDS_PRESTIGE: 1,
                 ActivityID.Type.SPIRE_OF_STARS: 3,
@@ -135,8 +135,8 @@ class FetcherTest(unittest.TestCase):
             },
             'FranckRabbit':
             {
-                ActivityID.Type.CALUS: 58,
-                ActivityID.Type.CALUS_PRESTIGE: 76,
+                ActivityID.Type.LEVIATHAN: 58,
+                ActivityID.Type.LEVIATHAN_PRESTIGE: 76,
                 ActivityID.Type.EATER_OF_WORLDS: 87,
                 ActivityID.Type.EATER_OF_WORLDS_PRESTIGE: 19,
                 ActivityID.Type.SPIRE_OF_STARS: 23,

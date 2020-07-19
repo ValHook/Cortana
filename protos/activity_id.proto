@@ -5,8 +5,8 @@ package protos;
 message ActivityID {
   enum Type {
     UNKNOWN = 0;
-    CALUS = 1;
-    CALUS_PRESTIGE = 2;
+    LEVIATHAN = 1;
+    LEVIATHAN_PRESTIGE = 2;
     EATER_OF_WORLDS = 3;
     EATER_OF_WORLDS_PRESTIGE = 4;
     SPIRE_OF_STARS = 5;

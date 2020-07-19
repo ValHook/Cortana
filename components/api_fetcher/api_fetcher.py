@@ -12,13 +12,13 @@ MAX_NETWORK_RETRIES_PER_REQUEST = 6
 BACKOFF_FACTOR = 0.5
 STATUS_FORCELIST = (500, 502, 504)
 BUNGIE_API_ENDPOINT = 'https://www.bungie.net/platform'
-DESTINY_2_CLANS_WATCHLIST = [ 
-                              696852, # La fine equipe du 11
-							  4220683, # Finis Terræ
-                              379807, # Les Francs Gardiens
-                              1890420, # Le Survivant du Cuirassé
-                              1907122, # Olympic Gaming
-                            ]
+DESTINY_2_CLANS_WATCHLIST = [
+    696852, # La fine equipe du 11
+    4220683, # Finis Terræ
+    379807, # Les Francs Gardiens
+    1890420, # Le Survivant du Cuirassé
+    1907122, # Olympic Gaming
+]
 DESTINY_2_ACTIVITIES_BY_HASH = {
     1875726950: ActivityID.Type.CALUS,
     2693136600: ActivityID.Type.CALUS,
@@ -52,6 +52,7 @@ class Fetcher:
         if not isinstance(api_key, str) or len(api_key) == 0:
             raise ValueError("Clé d'API Bungie non spécifiée")
         self.__api_key = api_key
+        self.__session = None
         self.__executor = ThreadPoolExecutor(max_workers=MAX_NETWORK_WORKERS)
 
     def fetch(self):
@@ -71,15 +72,28 @@ class Fetcher:
             bundle.stats_by_player[gamer_tag].activity_stats.append(stat)
         return bundle
 
-    def fetch_destiny2_data(self): 
+    def fetch_destiny2_data(self):
         """
         Fetches all stats for Destiny 1 and 2 players in the clan watchlists.
         Returns an array of (gamer_tag, ActivityID.Type, completions).
         """
-        players = self.parallel_flat_map(lambda clanID: self.fetch_destiny2_clan_members(clanID), DESTINY_2_CLANS_WATCHLIST)
-        characters = self.parallel_flat_map(lambda player: self.fetch_destiny2_player_characters(player), players)
-        completions = self.parallel_flat_map(lambda character: self.fetch_destiny2_character_activity_completions(character), characters)
-        completions_by_player = self.reduce_by_key(lambda c: (c[2], c[4]), lambda c1, c2: (c1[0], c1[1], c1[2], c1[3]+","+c1[3], c1[4], c1[5]+c2[5]), completions)
+        players = self.parallel_flat_map(
+            self.fetch_destiny2_clan_members,
+            DESTINY_2_CLANS_WATCHLIST
+        )
+        characters = self.parallel_flat_map(
+            self.fetch_destiny2_player_characters,
+            players
+        )
+        completions = self.parallel_flat_map(
+            self.fetch_destiny2_character_activity_completions,
+            characters
+        )
+        completions_by_player = self.reduce_by_key(
+            lambda c: (c[2], c[4]),
+            lambda c1, c2: (c1[0], c1[1], c1[2], c1[3]+","+c1[3], c1[4], c1[5]+c2[5]),
+            completions
+        )
         completions_by_player = map(lambda c: (c[0], c[4], c[5]), completions_by_player)
         return completions_by_player
 
@@ -91,7 +105,10 @@ class Fetcher:
         response = self.request('/GroupV2/'+str(clanID)+'/members/').json()
         results = response['Response']['results']
         members = map(lambda result: result['destinyUserInfo'], results)
-        members = map(lambda member: (member['displayName'], str(member['membershipType']), str(member['membershipId'])), members)
+        members = map(
+            lambda m: (m['displayName'], str(m['membershipType']), str(m['membershipId'])),
+            members
+        )
         return members
 
     def fetch_destiny2_player_characters(self, player):
@@ -103,9 +120,13 @@ class Fetcher:
         gamer_tag = player[0]
         membership_type = player[1]
         membership_id = player[2]
-        response = self.request('/Destiny2/'+membership_type+'/Profile/'+membership_id+'/?components=Characters').json()
+        path = '/Destiny2/'+membership_type+'/Profile/'+membership_id+'/?components=Characters'
+        response = self.request(path).json()
         results = response['Response']['characters']['data'].keys()
-        characters = map(lambda characterID: (gamer_tag, membership_type, membership_id, str(characterID)), results)
+        characters = map(
+            lambda characterID: (gamer_tag, membership_type, membership_id, str(characterID)),
+            results
+        )
         return characters
 
     def fetch_destiny2_character_activity_completions(self, character):
@@ -121,21 +142,51 @@ class Fetcher:
         character_id = character[3]
         defaults = []
         for activity_type in DESTINY_2_ACTIVITIES_BY_HASH.values():
-            defaults.append((gamer_tag, membership_type, membership_id, character_id, activity_type, 0))
-        path = '/Destiny2/'+membership_type+'/Account/'+membership_id+'/Character/'+character_id+'/Stats/AggregateActivityStats/'
+            default = (gamer_tag, membership_type, membership_id, character_id, activity_type, 0)
+            defaults.append(default)
+        path = '/Destiny2/'+membership_type+'/Account/'+membership_id+ \
+            '/Character/'+character_id+'/Stats/AggregateActivityStats/'
         response = self.request(path).json()
         try:
             results = response['Response']['activities']
         except:
             return defaults
-        results = filter(lambda result: result['activityHash'] in DESTINY_2_ACTIVITIES_BY_HASH, results)
-        results = map(lambda result: (DESTINY_2_ACTIVITIES_BY_HASH[result['activityHash']], int(result['values']['activityCompletions']['basic']['value'])), results)
-        activities = map(lambda result: (gamer_tag, membership_type, membership_id, character_id, result[0], result[1]), results)
+        results = filter(
+            lambda result: result['activityHash'] in DESTINY_2_ACTIVITIES_BY_HASH,
+            results
+        )
+        results = map(
+            lambda result: (
+                DESTINY_2_ACTIVITIES_BY_HASH[result['activityHash']],
+                int(result['values']['activityCompletions']['basic']['value'])
+            ),
+            results
+        )
+        activities = map(
+            lambda result: (
+                gamer_tag,
+                membership_type,
+                membership_id,
+                character_id,
+                result[0],
+                result[1]
+            ),
+            results
+        )
         activities = list(activities) + defaults
-        completions = self.reduce_by_key(lambda a: a[4], lambda a1, a2: (a1[0], a1[1], a1[2], a1[3], a1[4], a1[5]+a2[5]), activities)
+        completions = self.reduce_by_key(
+            lambda a: a[4],
+            lambda a1, a2: (a1[0], a1[1], a1[2], a1[3], a1[4], a1[5]+a2[5]),
+            activities
+        )
         return completions
-    
+
     def reduce_by_key(self, key_function, reduce_function, iterable):
+        """
+        Groups iterable elements by key_function.
+        Then reduce each group with reduce_function.
+        Returns an array of (key, reduce_output).
+        """
         iterable = list(iterable)
         iterable.sort(key=key_function)
         grouped = [list(values) for key, values in itertools.groupby(iterable, key_function)]

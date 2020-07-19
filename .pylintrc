@@ -6,3 +6,4 @@ disable=
     E0611, # no-name-in-module (let bazel test fail)
     R0201, # no-self-use
     C0103, # invalid-variable-name
+    W0702, # bare-except

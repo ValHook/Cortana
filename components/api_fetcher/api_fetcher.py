@@ -1,11 +1,11 @@
 from concurrent.futures import ThreadPoolExecutor
 from functools import reduce
 import itertools
-from protos.activity_id_pb2 import ActivityID
-from protos.api_bundle_pb2 import APIBundle
 import requests
 from requests.adapters import HTTPAdapter
 from requests.packages.urllib3.util.retry import Retry
+from protos.activity_id_pb2 import ActivityID
+from protos.api_bundle_pb2 import APIBundle
 
 MAX_NETWORK_WORKERS = 32
 MAX_NETWORK_RETRIES_PER_REQUEST = 6

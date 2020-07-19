@@ -1,6 +1,6 @@
-from components.storage import storage
 from pathlib import Path
 import unittest
+from components.storage import storage
 from protos.api_bundle_pb2 import APIBundle
 from protos.activity_id_pb2 import ActivityID
 
@@ -26,6 +26,7 @@ class FetcherTest(unittest.TestCase):
         self.assertRaises(IOError, self.sut.read_api_bundle)
 
     def test_api_bundle_write_then_read(self):
+        """Writes then reads an APIBundle to/from the storage."""
         gamer_tags = ['Walnut Waffle', 'SuperFayaChonch', 'foobar', 'Batman']
         stats = [
             APIBundle.Stats.ActivityStat(),
@@ -45,16 +46,13 @@ class FetcherTest(unittest.TestCase):
         for gamer_tag in gamer_tags:
             for stat in stats:
                 bundle.stats_by_player[gamer_tag].activity_stats.append(stat)
-        self.assertEquals(len(bundle.stats_by_player), len(gamer_tags))
-        self.assertEquals(len(bundle.stats_by_player[gamer_tags[0]].activity_stats), len(stats))
+        self.assertEqual(len(bundle.stats_by_player), len(gamer_tags))
+        self.assertEqual(len(bundle.stats_by_player[gamer_tags[0]].activity_stats), len(stats))
         self.sut.write_api_bundle(bundle)
         bundle2 = self.sut.read_api_bundle()
         self.assertEqual(bundle, bundle2)
         bundle3 = storage.Storage(Path('/tmp')).read_api_bundle()
         self.assertEqual(bundle, bundle3)
-
-
-
 
 if __name__ == '__main__':
     unittest.main()

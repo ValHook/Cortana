@@ -44,4 +44,3 @@ class Storage:
             filepath.write_bytes(data)
         except:
             raise IOError("Impossible d'écrirer l'API Bundle dans le stockage.")
-

@@ -18,18 +18,20 @@ Set your bungie API key in an environment variable:
 export BUNGIE_API_KEY=...
 ```
 
-TODO:Expose a buildable target for the bot once ready.
+TODO: Expose a buildable target for the bot once ready.
 
 ### Tests
 Run all the workspace tests:
 ```sh
 ./check_tests.sh
 ```
-Run lint checks:
+
+Run linter checks (Only bazel and python files, no support for protos yet):
 ```sh
 ./check_lint.sh
 ```
-Attempt fixing some of the lint mistakes:
+
+Attempt fixing some of the lint mistakes (Only Bazel files, no support for python or protos yet):
 ```sh
 ./perform_lint.sh
 ```

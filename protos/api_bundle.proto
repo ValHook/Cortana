@@ -1,0 +1,16 @@
+syntax = "proto3";
+
+import "protos/activity_id.proto";
+
+package protos;
+
+message APIBundle {
+  message Stats {
+  	message ActivityStat {
+  	  ActivityID.Type activity_type = 1;
+      int32 completions = 2;
+  	}
+    repeated ActivityStat activity_stats = 1;
+  }
+  map<string, Stats> stats_by_player = 1; 
+}

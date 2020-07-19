@@ -1,6 +1,6 @@
 import re
 import unittest
-from components.intent_parser import parser
+from components.intent_parser import intent_parser
 from protos.activity_id_pb2 import ActivityID
 
 
@@ -9,14 +9,14 @@ class ParserTest(unittest.TestCase):
 
     def test_initializer(self):
         """Verifies the initializer works as expected."""
-        sut = parser.Parser('foo')
+        sut = intent_parser.Parser('foo')
         self.assertEqual(sut.message, 'foo')
-        self.assertRaises(ValueError, parser.Parser, None)
-        self.assertRaises(ValueError, parser.Parser, 1337)
+        self.assertRaises(ValueError, intent_parser.Parser, None)
+        self.assertRaises(ValueError, intent_parser.Parser, 1337)
 
     def test_parse_activity_type(self):
         """Verifies the activity-type sub-parser."""
-        sut = parser.Parser('query does not matter')
+        sut = intent_parser.Parser('query does not matter')
         expectations = {
             ActivityID.Type.CALUS:
                 ['leviathan', 'calus', 'ckalus', 'leviatan', 'leviath', 'caluss'],
@@ -72,8 +72,17 @@ class ParserTest(unittest.TestCase):
                     self.assertEqual(activity_type, result[0], debug_str)
                     self.assertEqual(noise_array, result[1], debug_str)
 
-        noises = ["backup", "save finish", "info", "foo", "noise", "Walnut Waffle", "BAB",
-                  "Dark01light", "raid", ""]
+        noises = [
+            "backup",
+            "save finish",
+            "info",
+            "foo",
+            "noise",
+            "Walnut Waffle",
+            "BAB",
+            "Dark01light",
+            "raid",
+            ""]
         for noise in noises:
             noise_array = list(filter(len, re.split(r"\s+", noise)))
             self.assertRaises(ValueError, sut.parse_activity_type, noise_array)

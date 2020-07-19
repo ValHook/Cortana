@@ -6,8 +6,8 @@ py_library(
     name = "api_fetcher",
     srcs = ["api_fetcher.py"],
     deps = [
-    	"//protos:api_bundle",
-    	requirement("requests"),
+        "//protos:api_bundle",
+        requirement("requests"),
     ],
 )
 

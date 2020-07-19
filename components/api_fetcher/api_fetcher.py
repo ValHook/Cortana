@@ -8,7 +8,7 @@ from requests.adapters import HTTPAdapter
 from requests.packages.urllib3.util.retry import Retry
 
 MAX_NETWORK_WORKERS = 32
-MAX_NETWORK_RETRIES_PER_REQUEST = 7
+MAX_NETWORK_RETRIES_PER_REQUEST = 6
 BACKOFF_FACTOR = 0.5
 STATUS_FORCELIST = (500, 502, 504)
 BUNGIE_API_ENDPOINT = 'https://www.bungie.net/platform'
@@ -55,6 +55,10 @@ class Fetcher:
         self.__executor = ThreadPoolExecutor(max_workers=MAX_NETWORK_WORKERS)
 
     def fetch(self):
+        """
+        Fetches all stats for Destiny 1 and 2 players in the clan watchlists.
+        Returns an APIBundle proto.
+        """
         self.start_new_session()
         destiny2_data = self.fetch_destiny2_data()
         self.close_session()
@@ -68,6 +72,10 @@ class Fetcher:
         return bundle
 
     def fetch_destiny2_data(self): 
+        """
+        Fetches all stats for Destiny 1 and 2 players in the clan watchlists.
+        Returns an array of (gamer_tag, ActivityID.Type, completions).
+        """
         players = self.parallel_flat_map(lambda clanID: self.fetch_destiny2_clan_members(clanID), DESTINY_2_CLANS_WATCHLIST)
         characters = self.parallel_flat_map(lambda player: self.fetch_destiny2_player_characters(player), players)
         completions = self.parallel_flat_map(lambda character: self.fetch_destiny2_character_activity_completions(character), characters)
@@ -76,6 +84,10 @@ class Fetcher:
         return completions_by_player
 
     def fetch_destiny2_clan_members(self, clanID):
+        """
+        Fetches the members of the given clanID.
+        Returns an array of (gamer_tag, membership_type, membership_id).
+        """
         response = self.request('/GroupV2/'+str(clanID)+'/members/').json()
         results = response['Response']['results']
         members = map(lambda result: result['destinyUserInfo'], results)
@@ -83,23 +95,34 @@ class Fetcher:
         return members
 
     def fetch_destiny2_player_characters(self, player):
-        displayName = player[0]
-        membershipType = player[1]
-        membershipID = player[2]
-        response = self.request('/Destiny2/'+membershipType+'/Profile/'+membershipID+'/?components=Characters').json()
+        """
+        Fetches the characters of a player (gamer_tag, membership_type, membership_id).
+        Deleted characters are not returned.
+        Returns an array of (gamer_tag, membership_type, membership_id, character_id).
+        """
+        gamer_tag = player[0]
+        membership_type = player[1]
+        membership_id = player[2]
+        response = self.request('/Destiny2/'+membership_type+'/Profile/'+membership_id+'/?components=Characters').json()
         results = response['Response']['characters']['data'].keys()
-        characters = map(lambda characterID: (displayName, membershipType, membershipID, str(characterID)), results)
+        characters = map(lambda characterID: (gamer_tag, membership_type, membership_id, str(characterID)), results)
         return characters
 
     def fetch_destiny2_character_activity_completions(self, character):
-        displayName = character[0]
-        membershipType = character[1]
-        membershipID = character[2]
-        characterID = character[3]
+        """
+        Fetches the activity completions of a character.
+        Character is represented as (gamer_tag, membership_type, membership_id, character_id).
+        Returns an array of:
+          (gamer_tag, membership_type, membership_id, character_id, ActivityID.Type, completions).
+        """
+        gamer_tag = character[0]
+        membership_type = character[1]
+        membership_id = character[2]
+        character_id = character[3]
         defaults = []
         for activity_type in DESTINY_2_ACTIVITIES_BY_HASH.values():
-            defaults.append((displayName, membershipType, membershipID, characterID, activity_type, 0))
-        path = '/Destiny2/'+membershipType+'/Account/'+membershipID+'/Character/'+characterID+'/Stats/AggregateActivityStats/'
+            defaults.append((gamer_tag, membership_type, membership_id, character_id, activity_type, 0))
+        path = '/Destiny2/'+membership_type+'/Account/'+membership_id+'/Character/'+character_id+'/Stats/AggregateActivityStats/'
         response = self.request(path).json()
         try:
             results = response['Response']['activities']
@@ -107,7 +130,7 @@ class Fetcher:
             return defaults
         results = filter(lambda result: result['activityHash'] in DESTINY_2_ACTIVITIES_BY_HASH, results)
         results = map(lambda result: (DESTINY_2_ACTIVITIES_BY_HASH[result['activityHash']], int(result['values']['activityCompletions']['basic']['value'])), results)
-        activities = map(lambda result: (displayName, membershipType, membershipID, characterID, result[0], result[1]), results)
+        activities = map(lambda result: (gamer_tag, membership_type, membership_id, character_id, result[0], result[1]), results)
         activities = list(activities) + defaults
         completions = self.reduce_by_key(lambda a: a[4], lambda a1, a2: (a1[0], a1[1], a1[2], a1[3], a1[4], a1[5]+a2[5]), activities)
         return completions
@@ -119,13 +142,20 @@ class Fetcher:
         return map(lambda row: reduce(reduce_function, row), grouped)
 
     def parallel_map(self, function, iterable):
+        """Same as map but parallelized with a thread pool."""
         return self.__executor.map(function, iterable)
 
     def parallel_flat_map(self, function, iterable):
+        """Same as map + flattedn but parallelized with a thread pool."""
         matrix = self.parallel_map(function, iterable)
         return itertools.chain(*matrix)
 
     def start_new_session(self):
+        """
+        Starts a new session that can be reused for several HTTP requests.
+        The session has exponential backoff set up for every rquest.
+        The sessions also has the Bungie API Key set up for every request.
+        """
         session = requests.Session()
         retry = Retry(
             total=MAX_NETWORK_RETRIES_PER_REQUEST,
@@ -141,8 +171,10 @@ class Fetcher:
         self.__session = session
 
     def request(self, path):
+        """Makes a request with the currently active session."""
         return self.__session.get(BUNGIE_API_ENDPOINT + path)
 
     def close_session(self):
+        """Ends the currently active session and releases its sockets."""
         self.__session.close()
         self.__session = None

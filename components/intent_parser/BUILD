@@ -3,8 +3,8 @@ load("@pip_deps//:requirements.bzl", "requirement")
 package(default_visibility = ["//visibility:public"])
 
 py_library(
-    name = "parser",
-    srcs = ["parser.py"],
+    name = "intent_parser",
+    srcs = ["intent_parser.py"],
     deps = [
         "//protos:intent",
         requirement("unidecode"),
@@ -12,9 +12,9 @@ py_library(
 )
 
 py_test(
-    name = "parser_test",
-    srcs = ["parser_test.py"],
+    name = "intent_parser_test",
+    srcs = ["intent_parser_test.py"],
     deps = [
-        ":parser",
+        ":intent_parser",
     ],
 )

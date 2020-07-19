@@ -17,6 +17,12 @@ py_proto_library(
 )
 
 py_proto_library(
+    name = "api_bundle",
+    srcs = ["api_bundle.proto"],
+    deps = [":activity_id"],
+)
+
+py_proto_library(
     name = "intent",
     srcs = ["intent.proto"],
     deps = [

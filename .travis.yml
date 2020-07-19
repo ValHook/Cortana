@@ -1,19 +1,18 @@
 dist: xenial
-
 language: python
-
 addons:
   apt:
     sources:
-      - ubuntu-toolchain-r-test
+    - ubuntu-toolchain-r-test
     packages:
-      - wget
-      - pkg-config
-
+    - wget
+    - pkg-config
 before_install:
-  - wget https://github.com/bazelbuild/bazel/releases/download/3.3.1/bazel_3.3.1-linux-x86_64.deb
-  - sudo dpkg -i bazel_3.3.1-linux-x86_64.deb
-
+- wget https://github.com/bazelbuild/bazel/releases/download/3.3.1/bazel_3.3.1-linux-x86_64.deb
+- sudo dpkg -i bazel_3.3.1-linux-x86_64.deb
 script:
-  - chmod +x ./check_lint.sh && ./check_lint.sh
-  - chmod +x ./check_tests.sh && ./check_tests.sh
+- chmod +x ./check_lint.sh && ./check_lint.sh
+- chmod +x ./check_tests.sh && ./check_tests.sh
+env:
+  global:
+    secure: IJhFgglkLjLtFYig+8dfIq7MMRGuQV9cYE040dFDYrTVfSMJKbpAV2DQj1cN2CYNuvQGL55nNeYeCTE8g2TCooZNe1gBHJ9l3D6zaY75v2UVEl1ST8n1O+PTZRSN3FYmA2qmUUW+GV/aFxHmOwri7OuXotx35Mxex+Hx2ebJ1Wfa1s7JaXriGU6GmpDT7vr9tJcrUCd4m7xH3u/cXXTjv9d6lvos3eNAxCHmN0m7b/geeVG+WXiFLTabEZSD6Q8cf1Yo7rrllVPi5WByK8B6ILdATZnbXLh5K0NHsBnkipOvqT99aAZSDCyXojhJwAjVjKqF/9SqOXXhVAJV0e6vUk1ku4eopLJtD3QdCpn3F/n0Zw/Sfjj7K7Rb3jrV9yDJ5nqbuX12aKkgqthGsnSJjSkWskzZLI6ghGOs4CBF/KNXO0ZEaiPejxlVLUEuXY3sA8jKi8WS8PvH5wkSkRDUutjZ8aynXHRCffKZzN0uleqTd/ffnO3T6/5YmcJ4uFm8bh8BJlKL4T6KR587BP2eE/oPfOZahFLPHg+byc8WUO7nmkgepc7WJKQktb/oaFy9lD5Mf6ShHpgtpAvxOlT0MjdiCayIrhiF93nmyAqRokO0GinVWCQ3/z1mowv2GSnWwVpPp7KxRnVpSDXZAtnbdb9Qn+ckrqlCz/jXuJGFjbE=

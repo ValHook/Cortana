@@ -1,6 +1,10 @@
+from datetime import datetime
+from datetime import tzinfo
 import re
+import dateparser
 import unidecode
 from protos.activity_id_pb2 import ActivityID
+from protos.api_bundle_pb2 import APIBundle
 
 ACTIVITY_NAMES_BY_TYPE = {
     ActivityID.Type.LEVIATHAN:
@@ -45,15 +49,49 @@ ACTIVITY_NAMES_BY_TYPE[ActivityID.Type.WRATH_OF_THE_MACHINE_PRESTIGE] = [
 class Parser:
     """Parser for user input (intents)."""
 
-    def __init__(self, message):
+    def __init__(self, message, api_bundle, now, timezone, locale):
         if not isinstance(message, str):
             raise ValueError("Message vide")
+        if not isinstance(api_bundle, APIBundle):
+            raise ValueError("API Bundle vide")
+        if not isinstance(now, datetime):
+            raise ValueError("Horloge non configurée")
+        if not isinstance(timezone, tzinfo):
+            raise ValueError("Horloge non configurée")
+        if not isinstance(locale, str):
+            raise ValueError("Langue non configurée")
         self.__message = message
+        self.__api_bundle = api_bundle
+        self.__now = now
+        self.__timezone = timezone
+        self.__locale = locale
 
-    @property
-    def message(self):
-        """Returns the message this parser will process."""
-        return self.__message
+    def parse_datetime(self, initial_words):
+        """
+        Matches a datetime from the given word array.
+        Returns (the best matching date time or None, the rightmost unused words).
+        Several formats and languages are supported.
+        """
+        if len(initial_words) == 0:
+            return (None, [])
+
+        query = ""
+        words = initial_words.copy()
+        best_datetime_so_far = None
+        unused_words_for_best_datetime_so_far = words.copy()
+        while len(words) > 0:
+            query += " " + words.pop(0)
+            # Dateparser is not very good at parsing times when the minutes are not specified.
+            # Transform strings like 18h to 18h00.
+            query = re.sub(r"(.*)([0-9]h)$", '\g<1>\g<2>00', query)
+            datetime = dateparser.parse(query, settings={'PREFER_DATES_FROM': 'future'})
+            if datetime == None:
+                continue
+            datetime.replace(tzinfo=self.__timezone)
+            best_datetime_so_far = datetime
+            unused_words_for_best_datetime_so_far = words.copy()
+
+        return (datetime, words)
 
     def parse_activity_type(self, initial_words):
         """
@@ -65,10 +103,10 @@ class Parser:
             raise ValueError("Il manque le nom de l'activité")
 
         activities = ACTIVITY_NAMES_BY_TYPE.items()
-        best_activity_so_far = None
-        unused_words_for_best_activity_so_far = None
         query = ""
         words = initial_words.copy()
+        best_activity_so_far = None
+        unused_words_for_best_activity_so_far = words.copy()
         while len(words) > 0:
             query += " " + words.pop(0)
             levensthein_by_activity = map(lambda a: (a[0], min(

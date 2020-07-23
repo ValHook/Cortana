@@ -7,6 +7,7 @@ py_library(
     srcs = ["intent_parser.py"],
     deps = [
         "//protos:intent",
+        "//protos:api_bundle",
         requirement("unidecode"),
     ],
 )

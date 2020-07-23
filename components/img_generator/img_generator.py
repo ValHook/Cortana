@@ -73,8 +73,9 @@ NUM_SECTIONS = 4
 class Generator:
     """Generates the planning in GIF format."""
 
-    def __init__(self, planning):
+    def __init__(self, planning, date_tz):
         self.__planning = planning
+        self.__date_tz = date_tz
 
     def move(self, coordinates, section, width_to_center=None):
         """
@@ -110,6 +111,7 @@ class Generator:
             sdate = format_datetime(
                 datetime.utcfromtimestamp(a.id.timestamp_seconds),
                 format="EEEE d MMMM, à HH:mm",
+                tzinfo=self.__date_tz,
                 locale="fr"
             ).capitalize()
             detail_w = CR.getsize(sdate)[0]

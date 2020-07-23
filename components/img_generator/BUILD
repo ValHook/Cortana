@@ -3,26 +3,20 @@ load("@pip_deps//:requirements.bzl", "requirement")
 package(default_visibility = ["//visibility:public"])
 
 py_library(
-    name = "generator",
-    srcs = ["generator.py"],
+    name = "img_generator",
+    srcs = ["img_generator.py"],
     deps = [
         "//protos:planning",
+        requirement("babel"),
         requirement("pillow"),
     ],
     data = [":assets"],
 )
 
 py_test(
-    name = "generator_test",
-    srcs = ["generator_test.py"],
+    name = "img_generator_test",
+    srcs = ["img_generator_test.py"],
     deps = [
-        ":generator",
+        ":img_generator",
     ],
-)
-
-filegroup(
-    name = "assets",
-    srcs = glob([
-        "assets/*",
-    ]),
 )

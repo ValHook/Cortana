@@ -2,12 +2,11 @@ from protos.activity_id_pb2 import ActivityID
 from protos.rated_player_pb2 import RatedPlayer
 from PIL import Image, ImageDraw, ImageSequence, ImageFont
 import io
-import tempfile
 from datetime import datetime
 from babel.dates import format_datetime
 
-# Coordinates on the image as deltas to (X=0, Y=0) for the 1st banner on the GIF
-# Name is short to keep the logic compact in methods below
+# Coordinates relative to (X=0, Y=0) for any section on the GIF.
+# Name is short to keep the logic compact in methods below.
 COORDS = {
     "activity": (20, 20),
     "details": (20, 40),
@@ -50,8 +49,8 @@ for activity_id in list(ACTIVITY_NAMES):
         prestige_id = ActivityID.Type.Value(name_prestige)
         ACTIVITY_NAMES[prestige_id] = ACTIVITY_NAMES[activity_id] + " - Prestige"
 
-CR = ImageFont.truetype('components/img/assets/calibri_bold.ttf', 16)
-CI = ImageFont.truetype('components/img/assets/calibri_italic.ttf', 16)
+CR = ImageFont.truetype('components/img_generator/assets/calibri_bold.ttf', 16)
+CI = ImageFont.truetype('components/img_generator/assets/calibri_italic.ttf', 16)
 
 COLORS = {
     "blue": (78, 96, 224, 255),
@@ -68,6 +67,9 @@ COLORS_BY_RATING = {
     RatedPlayer.Rating.EXPERIENCED: COLORS["blue"],
 }
 
+NUM_SECTIONS = 4
+
+
 class Generator:
     """Generates the planning in GIF format."""
 
@@ -77,13 +79,13 @@ class Generator:
     def move(self, coordinates, section, width_to_center=None):
         """
         Moves coordinates at the right place depending on the section and the center preferences.
-        :param coordinates: tuple (X,Y) representing the initial coordinates
-        :param section: the section index, e.g. from 0 to 3 for the 1st GIF
-        :param width_to_center: optional parameter indicating the width of message if it has to be centered
-        :return: tuple for the new coordinates
+        :param coordinates: tuple (X,Y) representing the initial coordinates.
+        :param section: the section index, e.g. from 0 to 3 for the 1st GIF.
+        :param width_to_center: optional parameter indicating the width of message if it has to be centered.
+        :return: tuple for the new coordinates.
         """
         dx = COORDS["delta_x"] if (section % 2 == 1) else 0
-        dy = COORDS["delta_y"] if ((section / 4.0) % 1 >= 0.5) else 0
+        dy = COORDS["delta_y"] if ((section / float(NUM_SECTIONS)) % 1 >= 0.5) else 0
         new_x = coordinates[0] + dx
         new_y = coordinates[1] + dy
         if width_to_center:
@@ -93,10 +95,11 @@ class Generator:
     def write_to_frame(self, frame, banner_number):
         """
         Writes the relevant information for a given GIF frame.
-        :param frame: an Image object to write to
-        :param banner_number: an int representing the GIF index
+        :param frame: an Image object to write to.
+        :param banner_number: an int representing the GIF index.
         """
-        for section in range(banner_number * 4, min(banner_number * 4 + 4, len(self.__planning.activities))):
+        max_section = min(banner_number * NUM_SECTIONS + NUM_SECTIONS, len(self.__planning.activities))
+        for section in range(banner_number * NUM_SECTIONS, max_section):
             a = self.__planning.activities[section]
             name_w = CR.getsize(ACTIVITY_NAMES[a.id.type])[0]
             frame.text(
@@ -137,27 +140,26 @@ class Generator:
                     fill=COLORS_BY_RATING[p.rating]
                 )
 
-    def generate_image(self):
+    def generate_images(self):
         """
         Generates as many images as needed to display the activity planning.
-        GIFs are stored as temporary files on disk.
-        :return: an array of paths
+        :return: an array of BytesIO streams containing the GIFs.
         """
         gifs = []
-        needed_banners = ((len(self.__planning.activities) - 1) // 4) + 1
+        needed_banners = ((len(self.__planning.activities) - 1) // NUM_SECTIONS) + 1
         for banner_number in range(needed_banners):
-            with tempfile.NamedTemporaryFile(delete=False, suffix='.gif') as temp:
-                with Image.open('components/img/assets/empty_banner.gif') as im:
-                    frames = []
-                    for frame in ImageSequence.Iterator(im):
-                        frame = frame.convert('RGB')
-                        d = ImageDraw.Draw(frame)
-                        self.write_to_frame(d, banner_number)
-                        del d
-                        b = io.BytesIO()
-                        frame.save(b, format="GIF")
-                        frame = Image.open(b)
-                        frames.append(frame)
-                    frames[0].save(temp.name, save_all=True, append_images=frames[1:])
-                    gifs.append(temp.name)
+            temp = io.BytesIO()
+            with Image.open('components/img_generator/assets/empty_banner.gif') as im:
+                frames = []
+                for frame in ImageSequence.Iterator(im):
+                    frame = frame.convert('RGB')
+                    d = ImageDraw.Draw(frame)
+                    self.write_to_frame(d, banner_number)
+                    del d
+                    b = io.BytesIO()
+                    frame.save(b, format="GIF")
+                    frame = Image.open(b)
+                    frames.append(frame)
+                frames[0].save(temp, save_all=True, append_images=frames[1:], format="GIF")
+                gifs.append(temp)
         return gifs

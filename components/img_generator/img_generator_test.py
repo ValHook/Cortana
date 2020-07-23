@@ -1,17 +1,20 @@
+import hashlib
+import tempfile
 import unittest
 from components.img_generator import img_generator
 from protos.planning_pb2 import Planning
 from protos.activity_id_pb2 import ActivityID
 from protos.rated_player_pb2 import RatedPlayer
-import tempfile
-import hashlib
 
 
+# pylint: disable=too-many-statements
 class GeneratorTester(unittest.TestCase):
     """Test class for the image generator."""
 
     def test_planning(self):
-        """Not a real test, but writes a sample image on disk."""
+        """
+        Verifies the hash of generated GIFs to ensure the images stay the same.
+        """
         p = Planning()
         a = p.activities.add()
         a.id.type = ActivityID.Type.LEVIATHAN
@@ -120,7 +123,8 @@ class GeneratorTester(unittest.TestCase):
             with tempfile.NamedTemporaryFile(delete=False, suffix='.gif') as temp:
                 temp.write(gif.getbuffer())
                 print("NOTE - the result of this test can be visualized here: ", temp.name)
-            self.assertEqual(hashlib.sha256(gif.getbuffer()).hexdigest(), hash_reference[gif_index], True)
+            gif_hash = hashlib.sha256(gif.getbuffer()).hexdigest()
+            self.assertEqual(gif_hash, hash_reference[gif_index], True)
 
 
 if __name__ == '__main__':

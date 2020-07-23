@@ -1,9 +1,9 @@
-from protos.activity_id_pb2 import ActivityID
-from protos.rated_player_pb2 import RatedPlayer
-from PIL import Image, ImageDraw, ImageSequence, ImageFont
 import io
 from datetime import datetime
 from babel.dates import format_datetime
+from PIL import Image, ImageDraw, ImageSequence, ImageFont
+from protos.activity_id_pb2 import ActivityID
+from protos.rated_player_pb2 import RatedPlayer
 
 # Coordinates relative to (X=0, Y=0) for any section on the GIF.
 # Name is short to keep the logic compact in methods below.
@@ -81,7 +81,7 @@ class Generator:
         Moves coordinates at the right place depending on the section and the center preferences.
         :param coordinates: tuple (X,Y) representing the initial coordinates.
         :param section: the section index, e.g. from 0 to 3 for the 1st GIF.
-        :param width_to_center: optional parameter indicating the width of message if it has to be centered.
+        :param width_to_center: optional int indicating the width of text if it has to be centered.
         :return: tuple for the new coordinates.
         """
         dx = COORDS["delta_x"] if (section % 2 == 1) else 0
@@ -98,7 +98,7 @@ class Generator:
         :param frame: an Image object to write to.
         :param banner_number: an int representing the GIF index.
         """
-        max_section = min(banner_number * NUM_SECTIONS + NUM_SECTIONS, len(self.__planning.activities))
+        max_section = min((banner_number + 1) * NUM_SECTIONS, len(self.__planning.activities))
         for section in range(banner_number * NUM_SECTIONS, max_section):
             a = self.__planning.activities[section]
             name_w = CR.getsize(ACTIVITY_NAMES[a.id.type])[0]

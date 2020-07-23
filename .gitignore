@@ -4,3 +4,4 @@
 .bazelversion
 user.bazelrc
 /__pycache__
+.idea/

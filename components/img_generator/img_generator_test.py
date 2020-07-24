@@ -1,4 +1,5 @@
 import hashlib
+from platform import system
 import tempfile
 import unittest
 from babel.dates import get_timezone
@@ -112,20 +113,29 @@ class GeneratorTester(unittest.TestCase):
         a.squad.substitutes[-1].rating = RatedPlayer.Rating.BEGINNER
         (a.squad.substitutes.add()).gamer_tag = "Affectevil"
         a.squad.substitutes[-1].rating = RatedPlayer.Rating.BEGINNER
-        gen = img_generator.Generator(p, get_timezone('Europe/Paris'))
+        gen = img_generator.Generator(p, get_timezone('Europe/Paris'), "fr")
         gifs = gen.generate_images()
 
         hash_reference = {
-            0: "53da3f9dd08a454081c65baaa69c24bb0143bf4dd4d5fb54183f0c6f948d9f92",
-            1: "182ae3122597640e6eb3017910add1b22cfab636b126b57685f6253c4d758f0f"
+            "Darwin": {
+                0: "464491c1ca317478dec7cd12a4d580562e402de099d57ad628243b87f4076a90",
+                1: "ca6edfa4febf8e08fe5d43598df552088655d160e4cca75dd1efd80b4eb88568"
+            },
+            "Linux": {
+                0: "42c4520a7127475b52b8e2743a2a949709ab7a9e5d9bdc9c6fedf399b4f5f1e0",
+                1: "5f6f8181c66235040e946b7c16a7f8407cdc8d0c2b089095f5dfd3317e11f5ff"
+            }
         }
+
+        detected_os = system()
+        self.assertTrue(detected_os in hash_reference.keys(), "OS not supported to run tests")
 
         for gif_index, gif in enumerate(gifs):
             with tempfile.NamedTemporaryFile(delete=False, suffix='.gif') as temp:
                 temp.write(gif.getbuffer())
                 print("NOTE - the result of this test can be visualized here: ", temp.name)
             gif_hash = hashlib.sha256(gif.getbuffer()).hexdigest()
-            self.assertEqual(gif_hash, hash_reference[gif_index], True)
+            self.assertEqual(gif_hash, hash_reference[detected_os][gif_index], True)
 
 
 if __name__ == '__main__':

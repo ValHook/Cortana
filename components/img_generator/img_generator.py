@@ -74,11 +74,14 @@ NUM_SECTIONS = 4
 class Generator:
     """Generates the planning in GIF format."""
 
-    def __init__(self, planning, date_tz):
+    def __init__(self, planning, date_tz, locale):
         assert isinstance(planning, Planning), "%r is not a Planning instance" % planning
         assert isinstance(date_tz, tzinfo), "%r is not a tzinfo instance" % date_tz
+        if not isinstance(locale, str) or len(locale) == 0:
+            raise ValueError("Locale is not a string or is empty")
         self.__planning = planning
         self.__date_tz = date_tz
+        self.__locale = locale
 
     def move(self, coordinates, section, width_to_center=None):
         """
@@ -115,7 +118,7 @@ class Generator:
                 datetime.utcfromtimestamp(a.id.timestamp_seconds),
                 format="EEEE d MMMM, à HH:mm",
                 tzinfo=self.__date_tz,
-                locale="fr"
+                locale=self.__locale
             ).capitalize()
             detail_w = CR.getsize(sdate)[0]
             frame.text(
@@ -157,13 +160,9 @@ class Generator:
             with Image.open('components/img_generator/assets/empty_banner.gif') as im:
                 frames = []
                 for frame in ImageSequence.Iterator(im):
-                    frame = frame.convert('RGB')
+                    frame = frame.copy().convert('RGBA')
                     d = ImageDraw.Draw(frame)
                     self.write_to_frame(d, banner_number)
-                    del d
-                    b = io.BytesIO()
-                    frame.save(b, format="GIF")
-                    frame = Image.open(b)
                     frames.append(frame)
                 frames[0].save(temp, save_all=True, append_images=frames[1:], format="GIF")
                 gifs.append(temp)

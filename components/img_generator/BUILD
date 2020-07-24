@@ -5,7 +5,7 @@ package(default_visibility = ["//visibility:public"])
 py_library(
     name = "img_generator",
     srcs = ["img_generator.py"],
-    data = [":assets"],
+    data = ["//components/img_generator/assets"],
     deps = [
         "//protos:planning",
         requirement("babel"),

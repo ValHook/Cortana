@@ -16,8 +16,9 @@ py_library(
 py_test(
     name = "intent_parser_test",
     srcs = ["intent_parser_test.py"],
+    data = ["//components/intent_parser/test_assets"],
     deps = [
-        requirement("babel"),
         ":intent_parser",
+        requirement("babel"),
     ],
 )

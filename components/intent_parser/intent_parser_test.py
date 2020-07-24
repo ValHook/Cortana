@@ -1,4 +1,5 @@
 from datetime import datetime
+from pathlib import Path
 import re
 import unittest
 from babel.dates import get_timezone
@@ -8,6 +9,7 @@ from protos.api_bundle_pb2 import APIBundle
 
 SUT_QUERY = 'A query that does not matter'
 SUT_BUNDLE = APIBundle()
+SUT_BUNDLE.ParseFromString(Path('components/intent_parser/test_assets/api_bundle.dat').read_bytes())
 SUT_TIMEZONE = get_timezone('Europe/Paris')
 SUT_NOW = datetime(2020, 8, 12, 18, 15, 0, 0, SUT_TIMEZONE)
 SUT_LOCALE = 'fr'
@@ -121,6 +123,55 @@ class ParserTest(unittest.TestCase):
                 self.assertEqual(date_expectation, result[0], debug_str)
                 self.assertEqual(with_time_expectation, result[1], debug_str)
                 self.assertEqual(noise_array, result[2], debug_str)
+
+        noises = [
+            "backup",
+            "save finish",
+            "info",
+            "foo",
+            "noise",
+            "Walnut Waffle",
+            "BAB",
+            "Dark01light",
+            "raid",
+            ""]
+        for noise in noises:
+            noise_array = re.split(r"\s+", noise)
+            debug_str = noise + " => None"
+            result = self.sut.parse_datetime(noise_array)
+            self.assertEqual(None, result[0], debug_str)
+            self.assertEqual(None, result[1], debug_str)
+            self.assertEqual(noise_array, result[2], debug_str)
+
+    def test_parse_gamer_tag(self):
+        """Verifies the gamer tag sub-parser."""
+        expectations = {
+            'Walnut Waffle': ['WalnutWaffle', 'Wolnut Waffl', 'Walnut Waffle'],
+            'Cosa58': ['cosa', 'cosa58', 'COSA', 'CoSa558', 'Kosa'],
+            'dark0l1ght': ['DarkLight', 'dark01lght'],
+            'snippro34': ['snippro', 'Snipro34', 'snippro34'],
+            'croptus': ['croptus7490', 'croptus', 'KROptUs'],
+        }
+        noises = ['', 'backup', 'raid', 'jds', 'backup', '+DenisSurvivor', '-Foobar', '25/07']
+        prefixes = ['', '+', '-']
+        for (expected, candidates) in expectations.items():
+            for prefix in prefixes:
+                for candidate in candidates:
+                    candidate = prefix + candidate
+                    candidate_array = re.split(r"\s+", candidate)
+                    is_add = prefix != '-'
+                    for noise in noises:
+                        noise_array = list(filter(len, re.split(r"\s+", noise)))
+                        candidate_and_noise_array = candidate_array + noise_array
+                        debug_str = " ".join(candidate_and_noise_array) + \
+                            " => " + expected + "(is_add: " + str(is_add) + ")"
+                        result = self.sut.parse_gamer_tag(candidate_and_noise_array)
+                        self.assertEqual(expected, result[0], debug_str)
+                        self.assertEqual(is_add, result[1], debug_str)
+
+        for noise in noises:
+            noise_array = list(filter(len, re.split(r"\s+", noise)))
+            self.assertRaises(ValueError, self.sut.parse_gamer_tag, noise_array)
 
 
 if __name__ == '__main__':

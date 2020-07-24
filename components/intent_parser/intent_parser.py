@@ -52,7 +52,7 @@ class Parser:
     def __init__(self, message, api_bundle, now, locale):
         if not isinstance(message, str):
             raise ValueError("Message vide")
-        if not isinstance(api_bundle, APIBundle):
+        if not isinstance(api_bundle, APIBundle) or len(api_bundle.stats_by_player) < 6:
             raise ValueError("API Bundle vide")
         if not isinstance(now, datetime):
             raise ValueError("Horloge non configurée")
@@ -65,14 +65,57 @@ class Parser:
         self.__now = now
         self.__locale = locale
 
+    def parse_activity_type(self, initial_words):
+        """
+        Matches an activity type from the given word array.
+        Returns (the best matching activity type, the rightmost unused words).
+        Throws an exception in case of failure.
+        """
+        if len(initial_words) == 0:
+            raise ValueError("Il manque le nom de l'activité")
+
+        activities = ACTIVITY_NAMES_BY_TYPE.items()
+        query = ""
+        words = initial_words.copy()
+        best_activity_so_far = None
+        unused_words_for_best_activity_so_far = words.copy()
+        while len(words) > 0:
+            query += " " + words.pop(0)
+            levensthein_by_activity = map(
+                lambda a: (
+                    a[0],
+                    min([self.levensthein(query, name, '[^A-Za-z0-9+-]+') for name in a[1]])
+                ),
+                activities)
+            levensthein_by_activity = list(levensthein_by_activity)
+            levensthein_by_activity = sorted(
+                levensthein_by_activity,
+                key=lambda a: a[1]
+            )
+            (best_activity, best_levensthein) = levensthein_by_activity[0]
+
+            if best_levensthein > 3 or best_levensthein > 0.3 * len(query):
+                continue
+
+            best_activity_so_far = best_activity
+            unused_words_for_best_activity_so_far = words.copy()
+
+        if not best_activity_so_far:
+            raise ValueError(
+                "Un nom d'activité aurait dû être présent à partir de \"" +
+                " ".join(initial_words) +
+                "\"")
+
+        return best_activity_so_far, unused_words_for_best_activity_so_far
+
     def parse_datetime(self, initial_words):
         """
         Matches a datetime from the given word array.
         Returns (the best matching date time or None, with_time? bool, the rightmost unused words).
-        Several formats and languages are supported.
+        Several formats are supported.
         """
         if len(initial_words) == 0:
-            return (None, [])
+            return None, None, []
 
         query = ""
         words = initial_words.copy()
@@ -114,55 +157,67 @@ class Parser:
             best_datetime_so_far = parsed_datetime
             unused_words_for_best_datetime_so_far = words.copy()
 
-        return (best_datetime_so_far, with_time, unused_words_for_best_datetime_so_far)
+        return (
+            best_datetime_so_far,
+            with_time if best_datetime_so_far else None,
+            unused_words_for_best_datetime_so_far)
 
-    def parse_activity_type(self, initial_words):
+    def parse_gamer_tag(self, initial_words):
         """
-        Matches an activity type from the given word array.
-        Returns (the best matching activity type, the rightmost unused words).
+        Matches a gamer tag of the bundle from the given word array.
+        Returns (best matching gamer tag or None, add? or remove bool, the rightmost unused words).
         Throws an exception in case of failure.
         """
         if len(initial_words) == 0:
-            raise ValueError("Il manque le nom de l'activité")
+            raise ValueError("Il manque un gamer tag")
 
-        activities = ACTIVITY_NAMES_BY_TYPE.items()
         query = ""
         words = initial_words.copy()
-        best_activity_so_far = None
-        unused_words_for_best_activity_so_far = words.copy()
+        error = ValueError(
+            "Un gamer tag aurait dû être présent à partir de \"" +
+            " ".join(initial_words) +
+            "\""
+        )
+        is_add = words[0][0] != '-'
         while len(words) > 0:
             query += " " + words.pop(0)
-            levensthein_by_activity = map(lambda a: (a[0], min(
-                [self.levensthein(query, name) for name in a[1]])), activities)
-            levensthein_by_activity = list(levensthein_by_activity)
-            levensthein_by_activity = sorted(
-                levensthein_by_activity, key=lambda a: a[1])
-            (best_activity, best_levensthein) = levensthein_by_activity[0]
+            gamer_tags = self.__api_bundle.stats_by_player.keys()
+            gamer_tags = map(lambda g: (g, self.levensthein(query, g, '[^A-Za-z]+')), gamer_tags)
+            gamer_tags = sorted(gamer_tags, key=lambda g: g[1])
+            best_gamer_tag = gamer_tags[0][0]
+            best_levensthein = gamer_tags[0][1]
 
-            if best_levensthein > 3 or best_levensthein > 0.3 * len(query):
+            if best_levensthein > 2 or best_levensthein > 0.3 * len(query):
                 continue
+            second_best_gamer_tag = gamer_tags[1][0]
+            second_best_levensthein = gamer_tags[1][1]
+            if second_best_levensthein == best_levensthein:
+                error = ValueError(
+                    "Hésitation de gamer tag entre " +
+                    best_gamer_tag +
+                    " et " +
+                    second_best_gamer_tag +
+                    " à partir de \"" +
+                    " ".join(initial_words) +
+                    "\""
+                )
+                continue
+            return best_gamer_tag, is_add
 
-            best_activity_so_far = best_activity
-            unused_words_for_best_activity_so_far = words.copy()
+        raise error
 
-        if not best_activity_so_far:
-            raise ValueError(
-                "Un nom d'activité aurait dû être présent à partir de \"" +
-                " ".join(initial_words) +
-                "\"")
-
-        return (best_activity_so_far, unused_words_for_best_activity_so_far)
-
-    def levensthein(self, str_a, str_b):
-        """Returns a slightly adjusted levensthein distance between str_a and str_b."""
+    def levensthein(self, str_a, str_b, filter_out_regex):
+        """
+        Returns the Levensthein distance between str_a and str_b after applying filter_out_regex.
+        """
         str_a = unidecode.unidecode(str_a)
         str_b = unidecode.unidecode(str_b)
         str_a = str_a.strip()
         str_b = str_b.strip()
         str_a = str_a.lower()
         str_b = str_b.lower()
-        str_a = re.sub('[^A-Za-z0-9+-]+', '', str_a)
-        str_b = re.sub('[^A-Za-z0-9+-]+', '', str_b)
+        str_a = re.sub(filter_out_regex, '', str_a)
+        str_b = re.sub(filter_out_regex, '', str_b)
         if len(str_a) > len(str_b):
             str_a, str_b = str_b, str_a
         distances = range(len(str_a) + 1)

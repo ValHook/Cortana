@@ -1,3 +1,5 @@
+babel
+pillow
 pylint
 requests
 unidecode

@@ -1,8 +1,8 @@
 from datetime import datetime
 from datetime import tzinfo
 import re
-import dateparser
 import unidecode
+import dateparser
 from protos.activity_id_pb2 import ActivityID
 from protos.api_bundle_pb2 import APIBundle
 
@@ -49,27 +49,26 @@ ACTIVITY_NAMES_BY_TYPE[ActivityID.Type.WRATH_OF_THE_MACHINE_PRESTIGE] = [
 class Parser:
     """Parser for user input (intents)."""
 
-    def __init__(self, message, api_bundle, now, timezone, locale):
+    def __init__(self, message, api_bundle, now, locale):
         if not isinstance(message, str):
             raise ValueError("Message vide")
         if not isinstance(api_bundle, APIBundle):
             raise ValueError("API Bundle vide")
         if not isinstance(now, datetime):
             raise ValueError("Horloge non configurée")
-        if not isinstance(timezone, tzinfo):
-            raise ValueError("Horloge non configurée")
+        if not isinstance(now.tzinfo, tzinfo):
+            raise ValueError("Fuseau horaire non configuré")
         if not isinstance(locale, str):
-            raise ValueError("Langue non configurée")
+            raise ValueError("Locale non configurée")
         self.__message = message
         self.__api_bundle = api_bundle
         self.__now = now
-        self.__timezone = timezone
         self.__locale = locale
 
     def parse_datetime(self, initial_words):
         """
         Matches a datetime from the given word array.
-        Returns (the best matching date time or None, the rightmost unused words).
+        Returns (the best matching date time or None, with_time? bool, the rightmost unused words).
         Several formats and languages are supported.
         """
         if len(initial_words) == 0:
@@ -79,19 +78,43 @@ class Parser:
         words = initial_words.copy()
         best_datetime_so_far = None
         unused_words_for_best_datetime_so_far = words.copy()
+        with_time = True
         while len(words) > 0:
             query += " " + words.pop(0)
             # Dateparser is not very good at parsing times when the minutes are not specified.
             # Transform strings like 18h to 18h00.
-            query = re.sub(r"(.*)([0-9]h)$", '\g<1>\g<2>00', query)
-            datetime = dateparser.parse(query, settings={'PREFER_DATES_FROM': 'future'})
-            if datetime == None:
+            query = re.sub(r"(.*)([0-9]h)$", r"\g<1>\g<2>00", query)
+            try:
+                parsed_datetime = dateparser.parse(
+                    query,
+                    locales=[self.__locale],
+                    settings={'PREFER_DATES_FROM': 'future', 'RELATIVE_BASE':self.__now}
+                )
+            except:
+                # Dateparser can't deal with the case where the timezone is only present in either
+                # the parsed query or the relative base.
+                parsed_datetime = dateparser.parse(
+                    query,
+                    locales=[self.__locale],
+                    settings={
+                        'PREFER_DATES_FROM': 'future',
+                        'RELATIVE_BASE': self.__now.replace(tzinfo=None)
+                    }
+                )
+            if parsed_datetime is None:
                 continue
-            datetime.replace(tzinfo=self.__timezone)
-            best_datetime_so_far = datetime
+            # Dateparser wrongly adds implicit times to strings like "aujourd'hui" and "demain"
+            # Filter them out.
+            if not re.search(r"[0-9]h", query):
+                with_time = False
+                parsed_datetime = parsed_datetime.replace(hour=0, minute=0, second=0, microsecond=0)
+            else:
+                with_time = True
+            parsed_datetime = parsed_datetime.replace(tzinfo=self.__now.tzinfo)
+            best_datetime_so_far = parsed_datetime
             unused_words_for_best_datetime_so_far = words.copy()
 
-        return (datetime, words)
+        return (best_datetime_so_far, with_time, unused_words_for_best_datetime_so_far)
 
     def parse_activity_type(self, initial_words):
         """

@@ -160,7 +160,8 @@ class Parser:
         return (
             best_datetime_so_far,
             with_time if best_datetime_so_far else None,
-            unused_words_for_best_datetime_so_far)
+            unused_words_for_best_datetime_so_far
+        )
 
     def parse_gamer_tag(self, initial_words):
         """

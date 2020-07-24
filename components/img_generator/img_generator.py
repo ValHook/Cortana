@@ -1,8 +1,9 @@
 import io
-from datetime import datetime
+from datetime import datetime, tzinfo
 from babel.dates import format_datetime
 from PIL import Image, ImageDraw, ImageSequence, ImageFont
 from protos.activity_id_pb2 import ActivityID
+from protos.planning_pb2 import Planning
 from protos.rated_player_pb2 import RatedPlayer
 
 # Coordinates relative to (X=0, Y=0) for any section on the GIF.
@@ -30,24 +31,24 @@ COORDS = {
 
 ACTIVITY_NAMES = {
     ActivityID.Type.LEVIATHAN: "Léviathan",
+    ActivityID.Type.LEVIATHAN_PRESTIGE: "Léviathan - Prestige",
     ActivityID.Type.EATER_OF_WORLDS: "Dévoreur de Mondes",
+    ActivityID.Type.EATER_OF_WORLDS_PRESTIGE: "Dévoreur de Mondes - Prestige",
     ActivityID.Type.SPIRE_OF_STARS: "Flèche d'étoiles",
+    ActivityID.Type.SPIRE_OF_STARS_PRESTIGE: "Flèche d'étoiles - Prestige",
     ActivityID.Type.CROWN_OF_SORROW: "Couronne du Malheur",
     ActivityID.Type.LAST_WISH: "Dernier Voeu",
     ActivityID.Type.SCOURGE_OF_THE_PAST: "Fléau du Passé",
     ActivityID.Type.GARDEN_OF_SALVATION: "Jardin du Salut",
     ActivityID.Type.VAULT_OF_GLASS: "Caveau de Verre",
+    ActivityID.Type.VAULT_OF_GLASS_PRESTIGE: "Caveau de Verre - Prestige",
     ActivityID.Type.CROPTAS_END: "Cropta",
+    ActivityID.Type.CROPTAS_END_PRESTIGE: "Cropta - Prestige",
     ActivityID.Type.THE_TAKEN_KING: "La Chute du Roi",
+    ActivityID.Type.THE_TAKEN_KING_PRESTIGE: "La Chute du Roi - Prestige",
     ActivityID.Type.WRATH_OF_THE_MACHINE: "Fureur Mécanique",
+    ActivityID.Type.WRATH_OF_THE_MACHINE_PRESTIGE: "Fureur Mécanique - Prestige",
 }
-
-# Add Prestige names when needed
-for activity_id in list(ACTIVITY_NAMES):
-    name_prestige = ActivityID.Type.Name(activity_id) + "_PRESTIGE"
-    if name_prestige in ActivityID.Type.keys():
-        prestige_id = ActivityID.Type.Value(name_prestige)
-        ACTIVITY_NAMES[prestige_id] = ACTIVITY_NAMES[activity_id] + " - Prestige"
 
 CR = ImageFont.truetype('components/img_generator/assets/calibri_bold.ttf', 16)
 CI = ImageFont.truetype('components/img_generator/assets/calibri_italic.ttf', 16)
@@ -74,6 +75,8 @@ class Generator:
     """Generates the planning in GIF format."""
 
     def __init__(self, planning, date_tz):
+        assert isinstance(planning, Planning), "%r is not a Planning instance" % planning
+        assert isinstance(date_tz, tzinfo), "%r is not a tzinfo instance" % date_tz
         self.__planning = planning
         self.__date_tz = date_tz
 

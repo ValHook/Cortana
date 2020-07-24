@@ -5,12 +5,12 @@ package(default_visibility = ["//visibility:public"])
 py_library(
     name = "img_generator",
     srcs = ["img_generator.py"],
+    data = [":assets"],
     deps = [
         "//protos:planning",
         requirement("babel"),
         requirement("pillow"),
     ],
-    data = [":assets"],
 )
 
 py_test(

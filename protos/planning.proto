@@ -1,0 +1,9 @@
+syntax = "proto3";
+
+import "protos/activity.proto";
+
+package protos;
+
+message Planning {
+  repeated Activity activities = 1;
+}

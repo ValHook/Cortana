@@ -1,5 +1,6 @@
 babel
 dateparser
+pillow
 pylint
 requests
 unidecode

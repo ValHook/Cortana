@@ -19,6 +19,6 @@ py_test(
     data = ["//components/intent_parser/test_assets"],
     deps = [
         ":intent_parser",
-        requirement("babel"),
+        requirement("python-dateutil"),
     ],
 )

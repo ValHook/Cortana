@@ -217,7 +217,7 @@ class Parser:
         """
         :param: The words after !raid remove.
         :return: An activity removal intent.
-        :raises: If the wor./ds are not in the format [activity_type] (datetime).
+        :raises: If the worgit ds are not in the format [activity_type] (datetime).
         """
         (activity_type, words) = self.parse_activity_type(initial_words)
         date_time = None

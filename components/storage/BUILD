@@ -5,6 +5,7 @@ py_library(
     srcs = ["storage.py"],
     deps = [
         "//protos:api_bundle",
+        "//protos:planning",
     ],
 )
 

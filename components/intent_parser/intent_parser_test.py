@@ -1,22 +1,28 @@
+from datetime import datetime
+from pathlib import Path
 import re
 import unittest
+from babel.dates import get_timezone
 from components.intent_parser import intent_parser
 from protos.activity_id_pb2 import ActivityID
+from protos.api_bundle_pb2 import APIBundle
 
+SUT_QUERY = 'A query that does not matter'
+SUT_BUNDLE = APIBundle()
+SUT_BUNDLE.ParseFromString(Path('components/intent_parser/test_assets/api_bundle.dat').read_bytes())
+SUT_TIMEZONE = get_timezone('Europe/Paris')
+SUT_NOW = datetime(2020, 8, 12, 18, 15, 0, 0, SUT_TIMEZONE)
+SUT_LOCALE = 'fr'
 
 class ParserTest(unittest.TestCase):
     """Test class for the intent parser."""
 
-    def test_initializer(self):
-        """Verifies the initializer works as expected."""
-        sut = intent_parser.Parser('foo')
-        self.assertEqual(sut.message, 'foo')
-        self.assertRaises(ValueError, intent_parser.Parser, None)
-        self.assertRaises(ValueError, intent_parser.Parser, 1337)
+    def setUp(self):
+        """Sets up a basic sut."""
+        self.sut = intent_parser.Parser(SUT_QUERY, SUT_BUNDLE, SUT_NOW, SUT_LOCALE)
 
     def test_parse_activity_type(self):
         """Verifies the activity-type sub-parser."""
-        sut = intent_parser.Parser('query does not matter')
         expectations = {
             ActivityID.Type.LEVIATHAN:
                 ['leviathan', 'calus', 'ckalus', 'leviatan', 'leviath', 'caluss'],
@@ -68,7 +74,7 @@ class ParserTest(unittest.TestCase):
                     candidate_and_noise_array = candidate_array + noise_array
                     debug_str = " ".join(
                         candidate_and_noise_array) + " => " + ActivityID.Type.Name(activity_type)
-                    result = sut.parse_activity_type(candidate_and_noise_array)
+                    result = self.sut.parse_activity_type(candidate_and_noise_array)
                     self.assertEqual(activity_type, result[0], debug_str)
                     self.assertEqual(noise_array, result[1], debug_str)
 
@@ -85,7 +91,87 @@ class ParserTest(unittest.TestCase):
             ""]
         for noise in noises:
             noise_array = list(filter(len, re.split(r"\s+", noise)))
-            self.assertRaises(ValueError, sut.parse_activity_type, noise_array)
+            self.assertRaises(ValueError, self.sut.parse_activity_type, noise_array)
+
+    def test_parse_datetime(self):
+        """Verifies the date-time sub-parser."""
+        expectations = {
+            "mardi 21h15": (datetime(2020, 8, 18, 21, 15, 0, 0, SUT_TIMEZONE), True),
+            "mercredi 12h00": (datetime(2020, 8, 19, 12, 0, 0, 0, SUT_TIMEZONE), True),
+            "mercredi 22h00": (datetime(2020, 8, 19, 22, 0, 0, 0, SUT_TIMEZONE), True),
+            "mercredi": (datetime(2020, 8, 19, 0, 0, 0, 0, SUT_TIMEZONE), False),
+            "17/08": (datetime(2020, 8, 17, 0, 0, 0, 0, SUT_TIMEZONE), False),
+            "demain 20h": (datetime(2020, 8, 13, 20, 0, 0, 0, SUT_TIMEZONE), True),
+            "aujourd'hui": (datetime(2020, 8, 12, 0, 0, 0, 0, SUT_TIMEZONE), False),
+            "samedi 18h": (datetime(2020, 8, 15, 18, 0, 0, 0, SUT_TIMEZONE), True),
+            "vendredi": (datetime(2020, 8, 14, 0, 0, 0, 0, SUT_TIMEZONE), False),
+            "16/08 21h30": (datetime(2020, 8, 16, 21, 30, 0, 0, SUT_TIMEZONE), True),
+            "1/9": (datetime(2020, 9, 1, 0, 0, 0, 0, SUT_TIMEZONE), False),
+            "02/10": (datetime(2020, 10, 2, 0, 0, 0, 0, SUT_TIMEZONE), False),
+            "25/08 21h": (datetime(2020, 8, 25, 21, 0, 0, 0, SUT_TIMEZONE), True),
+            "6/1 17h45": (datetime(2021, 1, 6, 17, 45, 0, 0, SUT_TIMEZONE), True),
+        }
+        noises = ["", "17hShadow", "10_fooBar", "croptus", "Franstuk Walnut Oby1Chick 25/07",
+                  "+Cosa58 25/07", "-SuperFayaChonch", "+emile -Omega Gips"]
+        for (date_str, (date_expectation, with_time_expectation)) in expectations.items():
+            for noise in noises:
+                query_array = re.split(r"\s+", date_str)
+                noise_array = list(filter(len, re.split(r"\s+", noise)))
+                query_and_noise_array = query_array + noise_array
+                debug_str = " ".join(query_and_noise_array) + " => " + date_expectation.isoformat()
+                result = self.sut.parse_datetime(query_and_noise_array)
+                self.assertEqual(date_expectation, result[0], debug_str)
+                self.assertEqual(with_time_expectation, result[1], debug_str)
+                self.assertEqual(noise_array, result[2], debug_str)
+
+        noises = [
+            "backup",
+            "save finish",
+            "info",
+            "foo",
+            "noise",
+            "Walnut Waffle",
+            "BAB",
+            "Dark01light",
+            "raid",
+            ""]
+        for noise in noises:
+            noise_array = re.split(r"\s+", noise)
+            debug_str = noise + " => None"
+            result = self.sut.parse_datetime(noise_array)
+            self.assertEqual(None, result[0], debug_str)
+            self.assertEqual(None, result[1], debug_str)
+            self.assertEqual(noise_array, result[2], debug_str)
+
+    def test_parse_gamer_tag(self):
+        """Verifies the gamer tag sub-parser."""
+        expectations = {
+            'Walnut Waffle': ['WalnutWaffle', 'Wolnut Waffl', 'Walnut Waffle'],
+            'Cosa58': ['cosa', 'cosa58', 'COSA', 'CoSa558', 'Kosa'],
+            'dark0l1ght': ['DarkLight', 'dark01lght'],
+            'snippro34': ['snippro', 'Snipro34', 'snippro34'],
+            'croptus': ['croptus7490', 'croptus', 'KROptUs'],
+        }
+        noises = ['', 'backup', 'raid', 'jds', 'backup', '+DenisSurvivor', '-Foobar', '25/07']
+        prefixes = ['', '+', '-']
+        for (expected, candidates) in expectations.items():
+            for prefix in prefixes:
+                for candidate in candidates:
+                    candidate = prefix + candidate
+                    candidate_array = re.split(r"\s+", candidate)
+                    is_add = prefix != '-'
+                    for noise in noises:
+                        noise_array = list(filter(len, re.split(r"\s+", noise)))
+                        candidate_and_noise_array = candidate_array + noise_array
+                        debug_str = " ".join(candidate_and_noise_array) + \
+                            " => " + expected + "(is_add: " + str(is_add) + ")"
+                        result = self.sut.parse_gamer_tag(candidate_and_noise_array)
+                        self.assertEqual(expected, result[0], debug_str)
+                        self.assertEqual(is_add, result[1], debug_str)
+
+        for noise in noises:
+            noise_array = list(filter(len, re.split(r"\s+", noise)))
+            self.assertRaises(ValueError, self.sut.parse_gamer_tag, noise_array)
 
 
 if __name__ == '__main__':

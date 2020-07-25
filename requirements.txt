@@ -1,4 +1,5 @@
 babel
+dateparser
 pillow
 pylint
 requests

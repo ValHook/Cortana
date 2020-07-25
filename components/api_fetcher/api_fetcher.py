@@ -58,7 +58,7 @@ class Fetcher:
     def fetch(self):
         """
         Fetches all stats for Destiny 1 and 2 players in the clan watchlists.
-        Returns an APIBundle proto.
+        :return: The fetched APIBundle.
         """
         self.start_new_session()
         destiny2_data = self.fetch_destiny2_data()
@@ -75,7 +75,7 @@ class Fetcher:
     def fetch_destiny2_data(self):
         """
         Fetches all stats for Destiny 1 and 2 players in the clan watchlists.
-        Returns an array of (gamer_tag, ActivityID.Type, completions).
+        :return: An array of (gamer_tag, ActivityID.Type, completions) tuples.
         """
         players = self.parallel_flat_map(
             self.fetch_destiny2_clan_members,
@@ -100,7 +100,8 @@ class Fetcher:
     def fetch_destiny2_clan_members(self, clanID):
         """
         Fetches the members of the given clanID.
-        Returns an array of (gamer_tag, membership_type, membership_id).
+        :param clanID: The clan identifier in the form of an integer.
+        :return: An array of (gamer_tag, membership_type, membership_id) tuples.
         """
         response = self.request('/GroupV2/'+str(clanID)+'/members/').json()
         results = response['Response']['results']
@@ -113,9 +114,10 @@ class Fetcher:
 
     def fetch_destiny2_player_characters(self, player):
         """
-        Fetches the characters of a player (gamer_tag, membership_type, membership_id).
+        Fetches the characters of a player.
         Deleted characters are not returned.
-        Returns an array of (gamer_tag, membership_type, membership_id, character_id).
+        :param player: A (gamer_tag, membership_type, membership_id) tuple.
+        :return: An array of (gamer_tag, membership_type, membership_id, character_id) tuples.
         """
         gamer_tag = player[0]
         membership_type = player[1]
@@ -132,9 +134,9 @@ class Fetcher:
     def fetch_destiny2_character_activity_completions(self, character):
         """
         Fetches the activity completions of a character.
-        Character is represented as (gamer_tag, membership_type, membership_id, character_id).
-        Returns an array of:
-          (gamer_tag, membership_type, membership_id, character_id, ActivityID.Type, completions).
+        :param character: A (gamer_tag, membership_type, membership_id, character_id) tuple.
+        :return: An array of: (gamer_tag, membership_type, membership_id, character_id,
+        ActivityID.Type, completions) tuples.
         """
         gamer_tag = character[0]
         membership_type = character[1]
@@ -183,9 +185,10 @@ class Fetcher:
 
     def reduce_by_key(self, key_function, reduce_function, iterable):
         """
-        Groups iterable elements by key_function.
-        Then reduce each group with reduce_function.
-        Returns an array of (key, reduce_output).
+        :param key_function: Used to group iterable elements by key_function.
+        :param reduce_function: Reduce each group with reduce_function.
+        :param iterable: The iterable serving as input.
+        :return: An array of (key, reduce_output) tuples.
         """
         iterable = list(iterable)
         iterable.sort(key=key_function)
@@ -197,7 +200,7 @@ class Fetcher:
         return self.__executor.map(function, iterable)
 
     def parallel_flat_map(self, function, iterable):
-        """Same as map + flattedn but parallelized with a thread pool."""
+        """Same as map + flatten but parallelized with a thread pool."""
         matrix = self.parallel_map(function, iterable)
         return itertools.chain(*matrix)
 
@@ -222,7 +225,11 @@ class Fetcher:
         self.__session = session
 
     def request(self, path):
-        """Makes a request with the currently active session."""
+        """
+        Makes a request with the currently active session.
+        :param path: The path of the request. Appended to BUNGIE_API_ENDPOINT.
+        :return: The URL's content.
+        """
         return self.__session.get(BUNGIE_API_ENDPOINT + path)
 
     def close_session(self):

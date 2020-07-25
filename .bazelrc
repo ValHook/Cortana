@@ -1,1 +1,1 @@
-test --test_summary=detailed --test_output=all --verbose_failures --action_env=BUNGIE_API_KEY
+test --test_summary=detailed --test_output=all --verbose_failures --action_env=BUNGIE_API_KEY --action_env=PYTHONNOUSERSITE=nonempty --test_env=PYTHONNOUSERSITE=nonempty

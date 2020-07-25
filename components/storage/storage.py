@@ -24,7 +24,10 @@ class Storage:
             raise IOError("Impossible d'effacer le stockage.")
 
     def read_api_bundle(self):
-        """Reads the API Bundle that is saved to the storage."""
+        """
+        Reads the API Bundle that is saved to the storage.
+        :return: The read API Bundle.
+        """
         try:
             filepath = self.__root_path.joinpath(API_BUNDLE_FILE)
             data = filepath.read_bytes()
@@ -35,7 +38,10 @@ class Storage:
         return bundle
 
     def write_api_bundle(self, api_bundle):
-        """Writes the given API Bundle to the storage."""
+        """
+        Writes the given API Bundle to the storage.
+        :param api_bundle: The bundle to write.
+        """
         if not isinstance(api_bundle, APIBundle):
             raise ValueError("L'API Bundle à érire est invalide.")
         try:

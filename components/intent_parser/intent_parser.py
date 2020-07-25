@@ -81,6 +81,10 @@ class Parser:
         if next_word != '!raid':
             return None
         next_word = words.pop(0)
+        if next_word == "sync":
+            return self.parse_sync_intent(words)
+        if next_word == "lastsync":
+            return self.parse_lastsync_intent(words)
         if next_word == "images":
             return self.parse_images_intent(words)
         if next_word == "date":
@@ -92,6 +96,20 @@ class Parser:
         if next_word == "backup":
             return self.parse_upsert_squad_intent(words, True)
         return self.parse_upsert_squad_intent([next_word] + words, False)
+
+    def parse_sync_intent(self, initial_words):
+        """Returns a sync intent or raises an error."""
+        self.assert_words_empty(initial_words)
+        intent = Intent()
+        intent.sync_bundle = True
+        return intent
+
+    def parse_lastsync_intent(self, initial_words):
+        """Returns a lastsync intent or raises an error."""
+        self.assert_words_empty(initial_words)
+        intent = Intent()
+        intent.get_last_bundle_sync_timestamp = True
+        return intent
 
     def parse_images_intent(self, initial_words):
         """Returns a generate images intent or raises an error."""
@@ -113,7 +131,7 @@ class Parser:
         intent = Intent()
         intent.activity_id.type = activity_type
         intent.activity_id.timestamp_seconds = self.timestamp(old_date_time)
-        intent.update_timestamp_seconds = self.timestamp(new_date_time)
+        intent.update_timestamp = self.timestamp(new_date_time)
         return intent
 
     def parse_update_milestone_intent(self, initial_words):
@@ -184,19 +202,22 @@ class Parser:
             else:
                 removed.append(player)
 
-        added_squad = Squad()
-        if backup:
-            added_squad.substitutes.extend(added)
-        else:
-            added_squad.players.extend(added)
-        removed_squad = Squad()
-        if backup:
-            removed_squad.substitutes.extend(removed)
-        else:
-            removed_squad.players.extend(removed)
+        if len(added) > 0:
+            added_squad = Squad()
+            if backup:
+                added_squad.substitutes.extend(added)
+            else:
+                added_squad.players.extend(added)
+            intent.upsert_squad.added.CopyFrom(added_squad)
 
-        intent.upsert_squad.added.CopyFrom(added_squad)
-        intent.upsert_squad.removed.CopyFrom(removed_squad)
+        if len(removed) > 0:
+            removed_squad = Squad()
+            if backup:
+                removed_squad.substitutes.extend(removed)
+            else:
+                removed_squad.players.extend(removed)
+            intent.upsert_squad.removed.CopyFrom(removed_squad)
+
         return intent
 
     def parse_activity_type(self, initial_words):

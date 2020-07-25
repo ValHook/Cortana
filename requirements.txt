@@ -2,5 +2,6 @@ babel
 dateparser
 pillow
 pylint
+python-dateutil
 requests
 unidecode

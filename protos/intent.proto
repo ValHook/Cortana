@@ -11,12 +11,12 @@ message Intent {
     Squad removed = 2;
   }
 
-  ActivityID id = 1;
+  ActivityID activity_id = 1;
   oneof type {
-    Squad create = 2;
-    SquadDelta update_squad = 3;
-    int64 update_timestamp_seconds = 4;
-    bool mark_finished = 5;
-    string set_milestone = 6;
+    SquadDelta upsert_squad = 2;
+    int64 update_timestamp_seconds = 3;
+    bool mark_finished = 4;
+    string set_milestone = 5;
+    bool generate_images = 6;
   }
 }

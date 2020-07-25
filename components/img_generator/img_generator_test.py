@@ -2,7 +2,7 @@ import hashlib
 from platform import system
 import tempfile
 import unittest
-from babel.dates import get_timezone
+from dateutil import tz
 from components.img_generator import img_generator
 from protos.planning_pb2 import Planning
 from protos.activity_id_pb2 import ActivityID
@@ -113,7 +113,7 @@ class GeneratorTester(unittest.TestCase):
         a.squad.substitutes[-1].rating = RatedPlayer.Rating.BEGINNER
         (a.squad.substitutes.add()).gamer_tag = "Affectevil"
         a.squad.substitutes[-1].rating = RatedPlayer.Rating.BEGINNER
-        gen = img_generator.Generator(p, get_timezone('Europe/Paris'), "fr")
+        gen = img_generator.Generator(p, tz.gettz('Europe/Paris'), "fr")
         gifs = gen.generate_images()
 
         hash_reference = {

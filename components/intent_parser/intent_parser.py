@@ -5,6 +5,9 @@ import unidecode
 import dateparser
 from protos.activity_id_pb2 import ActivityID
 from protos.api_bundle_pb2 import APIBundle
+from protos.intent_pb2 import Intent
+from protos.rated_player_pb2 import RatedPlayer
+from protos.squad_pb2 import Squad
 
 ACTIVITY_NAMES_BY_TYPE = {
     ActivityID.Type.LEVIATHAN:
@@ -16,7 +19,7 @@ ACTIVITY_NAMES_BY_TYPE = {
     ActivityID.Type.CROWN_OF_SORROW:
         ['couronne', 'couronne du malheur'],
     ActivityID.Type.LAST_WISH:
-        ['dernier voeu', 'dernier vœu', 'riven', 'voeu', 'vœu', ],
+        ['dernier voeu', 'dernier vœu', 'riven', 'voeu', 'vœu'],
     ActivityID.Type.SCOURGE_OF_THE_PAST:
         ['fléau', 'fléau du passé'],
     ActivityID.Type.GARDEN_OF_SALVATION:
@@ -26,7 +29,7 @@ ACTIVITY_NAMES_BY_TYPE = {
     ActivityID.Type.CROPTAS_END:
         ['la chute de cropta', 'chute de cropta', 'cropta'],
     ActivityID.Type.THE_TAKEN_KING:
-        ['la chute du roi', 'chute du roi', 'oryx', 'la chute d\'oryx'],
+        ['la chute du roi', 'chute du roi', 'oryx', 'la chute d\'oryx', 'chute d\'oryx'],
     ActivityID.Type.WRATH_OF_THE_MACHINE:
         ['la fureur mécanique', 'fureur mécanique', 'fureur', 'axis'],
 }
@@ -45,6 +48,8 @@ ACTIVITY_NAMES_BY_TYPE[ActivityID.Type.THE_TAKEN_KING_PRESTIGE] = [
 ACTIVITY_NAMES_BY_TYPE[ActivityID.Type.WRATH_OF_THE_MACHINE_PRESTIGE] = [
     name + " prestige" for name in ACTIVITY_NAMES_BY_TYPE[ActivityID.Type.WRATH_OF_THE_MACHINE]]
 
+INTERMEDIATE_MIN_COMPLETIONS = 6
+EXPERIENCED_MIN_COMPLETIONS = 12
 
 class Parser:
     """Parser for user input (intents)."""
@@ -65,6 +70,135 @@ class Parser:
         self.__now = now
         self.__locale = locale
 
+    def parse(self):
+        """
+        Parser entry point. Returns an intent if the message is a bot intent or None if not.
+        i.e Messages starting with !raid are treated as intents. The rest are not.
+        Raises an error if the message is an intent but ill-formed.
+        """
+        words = re.split(r"\s+", self.__message)
+        next_word = words.pop(0)
+        if next_word != '!raid':
+            return None
+        next_word = words.pop(0)
+        if next_word == "images":
+            return self.parse_images_intent(words)
+        if next_word == "date":
+            return self.parse_update_datetime_intent(words)
+        if next_word == "milestone":
+            return self.parse_update_milestone_intent(words)
+        if next_word == "finish":
+            return self.parse_finish_intent(words)
+        if next_word == "backup":
+            return self.parse_upsert_squad_intent(words, True)
+        return self.parse_upsert_squad_intent([next_word] + words, False)
+
+    def parse_images_intent(self, initial_words):
+        """Returns a generate images intent or raises an error."""
+        self.assert_words_empty(initial_words)
+        intent = Intent()
+        intent.generate_images = True
+        return intent
+
+    def parse_update_datetime_intent(self, initial_words):
+        """Returns a date time update intent or raises an error."""
+        (activity_type, words) = self.parse_activity_type(initial_words)
+        (old_date_time, _, words) = self.parse_datetime(words)
+        try:
+            (new_date_time, _, words) = self.parse_datetime(words)
+        except:
+            new_date_time = old_date_time
+            old_date_time = None
+        self.assert_words_empty(words)
+        intent = Intent()
+        intent.activity_id.type = activity_type
+        intent.activity_id.timestamp_seconds = self.timestamp(old_date_time)
+        intent.update_timestamp_seconds = self.timestamp(new_date_time)
+        return intent
+
+    def parse_update_milestone_intent(self, initial_words):
+        """Returns a milestone update intent or raises an error."""
+        (activity_type, words) = self.parse_activity_type(initial_words)
+        date_time = None
+        try:
+            (date_time, _, words) = self.parse_datetime(words)
+        except:
+            pass
+        intent = Intent()
+        intent.activity_id.type = activity_type
+        intent.activity_id.timestamp_seconds = self.timestamp(date_time)
+        if len(words) == 0:
+            raise ValueError("Il manque le nom de la milestone")
+        intent.set_milestone = " ".join(words).capitalize()
+        return intent
+
+    def parse_finish_intent(self, initial_words):
+        """Returns a finish intent or raises an error."""
+        (activity_type, words) = self.parse_activity_type(initial_words)
+        date_time = None
+        try:
+            (date_time, _, words) = self.parse_datetime(words)
+        except:
+            pass
+        intent = Intent()
+        intent.activity_id.type = activity_type
+        intent.activity_id.timestamp_seconds = self.timestamp(date_time)
+        self.assert_words_empty(words)
+        intent.mark_finished = True
+        return intent
+
+    def parse_upsert_squad_intent(self, initial_words, backup):
+        """Returns a squad upsert intent or raises an error."""
+        (activity_type, words) = self.parse_activity_type(initial_words)
+        date_time = None
+        try:
+            (date_time, _, words) = self.parse_datetime(words)
+        except:
+            pass
+        intent = Intent()
+        intent.activity_id.type = activity_type
+        intent.activity_id.timestamp_seconds = self.timestamp(date_time)
+        at_least_once = False
+        added = []
+        removed = []
+        while len(words) > 0 or not at_least_once:
+            at_least_once = True
+            gamer_tag, is_add, words = self.parse_gamer_tag(words)
+            stats = self.__api_bundle.stats_by_player[gamer_tag].activity_stats
+            rating = RatedPlayer.Rating.UNKNOWN
+            for stat in stats:
+                if stat.activity_type == activity_type:
+                    completions = stat.completions
+                    if completions > EXPERIENCED_MIN_COMPLETIONS:
+                        rating = RatedPlayer.Rating.EXPERIENCED
+                    elif completions > INTERMEDIATE_MIN_COMPLETIONS:
+                        rating = RatedPlayer.Rating.INTERMEDIATE
+                    else:
+                        rating = RatedPlayer.Rating.BEGINNER
+                    break
+            player = RatedPlayer()
+            player.gamer_tag = gamer_tag
+            player.rating = rating
+            if is_add:
+                added.append(player)
+            else:
+                removed.append(player)
+
+        added_squad = Squad()
+        if backup:
+            added_squad.substitutes.extend(added)
+        else:
+            added_squad.players.extend(added)
+        removed_squad = Squad()
+        if backup:
+            removed_squad.substitutes.extend(removed)
+        else:
+            removed_squad.players.extend(removed)
+
+        intent.upsert_squad.added.CopyFrom(added_squad)
+        intent.upsert_squad.removed.CopyFrom(removed_squad)
+        return intent
+
     def parse_activity_type(self, initial_words):
         """
         Matches an activity type from the given word array.
@@ -72,7 +206,7 @@ class Parser:
         Throws an exception in case of failure.
         """
         if len(initial_words) == 0:
-            raise ValueError("Il manque le nom de l'activité")
+            raise ValueError("Il manque un nom d'activité")
 
         activities = ACTIVITY_NAMES_BY_TYPE.items()
         query = ""
@@ -84,7 +218,7 @@ class Parser:
             levensthein_by_activity = map(
                 lambda a: (
                     a[0],
-                    min([self.levensthein(query, name, '[^A-Za-z0-9+-]+') for name in a[1]])
+                    min([self.levensthein(query, name, '[^A-Za-z0-9+-/]+') for name in a[1]])
                 ),
                 activities)
             levensthein_by_activity = list(levensthein_by_activity)
@@ -93,37 +227,39 @@ class Parser:
                 key=lambda a: a[1]
             )
             (best_activity, best_levensthein) = levensthein_by_activity[0]
-
-            if best_levensthein > 3 or best_levensthein > 0.3 * len(query):
+            if best_levensthein > 2 or best_levensthein > 0.4 * len(query):
                 continue
-
             best_activity_so_far = best_activity
             unused_words_for_best_activity_so_far = words.copy()
 
         if not best_activity_so_far:
             raise ValueError(
-                "Un nom d'activité aurait dû être présent à partir de \"" +
-                " ".join(initial_words) +
-                "\"")
-
+                'Un nom d\'activité aurait dû être présent à partir de "' +
+                ' '.join(initial_words) +
+                '"'
+            )
         return best_activity_so_far, unused_words_for_best_activity_so_far
 
     def parse_datetime(self, initial_words):
         """
         Matches a datetime from the given word array.
-        Returns (the best matching date time or None, with_time? bool, the rightmost unused words).
+        Returns (the best matching date time, with_time? bool, the rightmost unused words).
         Several formats are supported.
+        Raises an error if no match is found.
         """
         if len(initial_words) == 0:
-            return None, None, []
+            raise ValueError('Il manque une date et une heure')
 
         query = ""
         words = initial_words.copy()
+        popped_words = 0
         best_datetime_so_far = None
         unused_words_for_best_datetime_so_far = words.copy()
         with_time = True
-        while len(words) > 0:
+        while len(words) > 0 and popped_words < 2:
             query += " " + words.pop(0)
+            popped_words += 1
+
             # Dateparser is not very good at parsing times when the minutes are not specified.
             # Transform strings like 18h to 18h00.
             query = re.sub(r"(.*)([0-9]h)$", r"\g<1>\g<2>00", query)
@@ -157,9 +293,16 @@ class Parser:
             best_datetime_so_far = parsed_datetime
             unused_words_for_best_datetime_so_far = words.copy()
 
+        if best_datetime_so_far is None:
+            raise ValueError(
+                'Une date et une heure auraient dû être présent à partir de "' +
+                ' '.join(initial_words) +
+                '"'
+            )
+
         return (
             best_datetime_so_far,
-            with_time if best_datetime_so_far else None,
+            with_time,
             unused_words_for_best_datetime_so_far
         )
 
@@ -180,6 +323,7 @@ class Parser:
             "\""
         )
         is_add = words[0][0] != '-'
+        best_gamer_tag_so_far = None
         while len(words) > 0:
             query += " " + words.pop(0)
             gamer_tags = self.__api_bundle.stats_by_player.keys()
@@ -203,7 +347,11 @@ class Parser:
                     "\""
                 )
                 continue
-            return best_gamer_tag, is_add
+            best_gamer_tag_so_far = best_gamer_tag
+            unused_words_for_best_gamer_tag_so_far = words.copy()
+
+        if best_gamer_tag_so_far:
+            return best_gamer_tag_so_far, is_add, unused_words_for_best_gamer_tag_so_far
 
         raise error
 
@@ -232,3 +380,19 @@ class Parser:
                         1 + min((distances[i1], distances[i1 + 1], distances_[-1])))
             distances = distances_
         return distances[-1]
+
+    def timestamp(self, date_time):
+        """
+        Converts the given date time to a timestamp.
+        Returns 0 if the input is not valid.
+        """
+        try:
+            return int(datetime.timestamp(date_time))
+        except:
+            return 0
+
+    def assert_words_empty(self, words):
+        """Raises an error if the words are empty."""
+        if len(words) > 0:
+            rest = " ".join(words)
+            raise ValueError("La commande aurait dû s'arrêter juste avant " + rest)

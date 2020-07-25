@@ -18,5 +18,6 @@ py_test(
     srcs = ["img_generator_test.py"],
     deps = [
         ":img_generator",
+        requirement("python-dateutil"),
     ],
 )

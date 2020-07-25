@@ -51,7 +51,7 @@ class FetcherTest(unittest.TestCase):
         self.assertEqual(bundle, bundle3)
         self.assertRaises(IOError, self.sut.read_planning)
 
-    def test_api_bundle_write_then_read(self):
+    def test_planning_write_then_read(self):
         """Writes then reads a planning to/from the storage."""
         planning = Planning()
         player1 = RatedPlayer()

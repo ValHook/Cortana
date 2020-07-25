@@ -94,9 +94,24 @@ class Parser:
             return self.parse_update_milestone_intent(words)
         if next_word == "finish":
             return self.parse_finish_intent(words)
+        if next_word == "remove":
+            return self.parse_remove_intent(words)
+        if next_word == "clearpast":
+            return self.parse_clearpast_intent(words)
         if next_word == "backup":
             return self.parse_upsert_squad_intent(words, True)
         return self.parse_upsert_squad_intent([next_word] + words, False)
+
+    def parse_clearpast_intent(self, initial_words):
+        """
+        :param: The words after !raid clearpast.
+        :return: A clear past intent.
+        :raises: If the words are not empty.
+        """
+        self.assert_words_empty(initial_words)
+        intent = Intent()
+        intent.clear_all_activities_from_past_weeks = True
+        return intent
 
     def parse_sync_intent(self, initial_words):
         """
@@ -196,6 +211,27 @@ class Parser:
             intent.activity_id.when.CopyFrom(when)
         self.assert_words_empty(words)
         intent.mark_finished = True
+        return intent
+
+    def parse_remove_intent(self, initial_words):
+        """
+        :param: The words after !raid remove.
+        :return: An activity removal intent.
+        :raises: If the worgit ds are not in the format [activity_type] (datetime).
+        """
+        (activity_type, words) = self.parse_activity_type(initial_words)
+        date_time = None
+        try:
+            (date_time, _, words) = self.parse_datetime(words)
+        except:
+            pass
+        intent = Intent()
+        intent.activity_id.type = activity_type
+        when = self.make_when(date_time)
+        if when:
+            intent.activity_id.when.CopyFrom(when)
+        self.assert_words_empty(words)
+        intent.remove = True
         return intent
 
     def parse_upsert_squad_intent(self, initial_words, backup):

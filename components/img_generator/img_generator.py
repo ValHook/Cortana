@@ -114,9 +114,13 @@ class Generator:
                 ACTIVITY_NAMES[a.id.type], font=CR,
                 fill=COLORS["purple"]
             )
+            date_time = datetime.fromisoformat(a.id.when.datetime)
+            if not date_time.tzinfo:
+                date_time.replace(tzinfo=self.__date_tz)
+            date_format = "EEEE d MMMM, à HH:mm" if a.id.when.time_specified else "EEEE d MMMM"
             sdate = format_datetime(
-                datetime.utcfromtimestamp(a.id.timestamp_seconds),
-                format="EEEE d MMMM, à HH:mm",
+                date_time,
+                format=date_format,
                 tzinfo=self.__date_tz,
                 locale=self.__locale
             ).capitalize()

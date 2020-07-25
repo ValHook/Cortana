@@ -108,7 +108,7 @@ class Parser:
         """Returns a lastsync intent or raises an error."""
         self.assert_words_empty(initial_words)
         intent = Intent()
-        intent.get_last_bundle_sync_timestamp = True
+        intent.get_last_bundle_sync_datetime = True
         return intent
 
     def parse_images_intent(self, initial_words):
@@ -130,8 +130,12 @@ class Parser:
         self.assert_words_empty(words)
         intent = Intent()
         intent.activity_id.type = activity_type
-        intent.activity_id.timestamp_seconds = self.timestamp(old_date_time)
-        intent.update_timestamp = self.timestamp(new_date_time)
+        old_when = self.make_when(old_date_time)
+        new_when = self.make_when(new_date_time)
+        if old_when:
+            intent.activity_id.when.CopyFrom(old_when)
+        if new_when:
+            intent.update_when.CopyFrom(new_when)
         return intent
 
     def parse_update_milestone_intent(self, initial_words):
@@ -144,7 +148,9 @@ class Parser:
             pass
         intent = Intent()
         intent.activity_id.type = activity_type
-        intent.activity_id.timestamp_seconds = self.timestamp(date_time)
+        when = self.make_when(date_time)
+        if when:
+            intent.activity_id.when.CopyFrom(when)
         if len(words) == 0:
             raise ValueError("Il manque le nom de la milestone")
         intent.set_milestone = " ".join(words).capitalize()
@@ -160,7 +166,9 @@ class Parser:
             pass
         intent = Intent()
         intent.activity_id.type = activity_type
-        intent.activity_id.timestamp_seconds = self.timestamp(date_time)
+        when = self.make_when(date_time)
+        if when:
+            intent.activity_id.when.CopyFrom(when)
         self.assert_words_empty(words)
         intent.mark_finished = True
         return intent
@@ -175,7 +183,9 @@ class Parser:
             pass
         intent = Intent()
         intent.activity_id.type = activity_type
-        intent.activity_id.timestamp_seconds = self.timestamp(date_time)
+        when = self.make_when(date_time)
+        if when:
+            intent.activity_id.when.CopyFrom(when)
         at_least_once = False
         added = []
         removed = []
@@ -307,10 +317,12 @@ class Parser:
             # Filter them out.
             if not re.search(r"[0-9]h", query):
                 with_time = False
-                parsed_datetime = parsed_datetime.replace(hour=0, minute=0, second=0, microsecond=0)
+                parsed_datetime = parsed_datetime.replace(
+                    hour=0, minute=0, second=0, microsecond=0, tzinfo=None
+                )
             else:
                 with_time = True
-            parsed_datetime = parsed_datetime.replace(tzinfo=self.__now.tzinfo)
+                parsed_datetime = parsed_datetime.replace(tzinfo=self.__now.tzinfo)
             best_datetime_so_far = parsed_datetime
             unused_words_for_best_datetime_so_far = words.copy()
 
@@ -345,6 +357,7 @@ class Parser:
         )
         is_add = words[0][0] != '-'
         best_gamer_tag_so_far = None
+        unused_words_for_best_gamer_tag_so_far = words.copy()
         while len(words) > 0:
             query += " " + words.pop(0)
             gamer_tags = self.__api_bundle.stats_by_player.keys()
@@ -402,15 +415,21 @@ class Parser:
             distances = distances_
         return distances[-1]
 
-    def timestamp(self, date_time):
+    def make_when(self, date_time):
         """
-        Converts the given date time to a timestamp.
-        Returns 0 if the input is not valid.
+        Converts the given date time into a when.
+        Returns None if the input is not valid.
         """
         try:
-            return int(datetime.timestamp(date_time))
+            when = ActivityID.When()
+            if date_time.hour != 0 and date_time.minute != 0:
+                when.time_specified = True
+                when.datetime = date_time.isoformat()
+            else:
+                when.datetime = date_time.date().isoformat()
+            return when
         except:
-            return 0
+            return None
 
     def assert_words_empty(self, words):
         """Raises an error if the words are empty."""

@@ -20,7 +20,8 @@ class GeneratorTester(unittest.TestCase):
         p = Planning()
         a = p.activities.add()
         a.id.type = ActivityID.Type.LEVIATHAN
-        a.id.timestamp_seconds = 1594763746
+        a.id.when.datetime = '2020-07-14T23:55:00+02:00'
+        a.id.when.time_specified = True
         (a.squad.players.add()).gamer_tag = "Cosa58"
         a.squad.players[-1].rating = RatedPlayer.Rating.EXPERIENCED
         (a.squad.players.add()).gamer_tag = "Walnut Waffle"
@@ -39,7 +40,8 @@ class GeneratorTester(unittest.TestCase):
         a.squad.substitutes[-1].rating = RatedPlayer.Rating.BEGINNER
         a = p.activities.add()
         a.id.type = ActivityID.Type.SPIRE_OF_STARS_PRESTIGE
-        a.id.timestamp_seconds = 1595493712
+        a.id.when.datetime = '2020-07-23'
+        a.id.when.time_specified = False
         (a.squad.players.add()).gamer_tag = "Cosa58"
         a.squad.players[-1].rating = RatedPlayer.Rating.BEGINNER
         (a.squad.players.add()).gamer_tag = "Walnut Waffle"
@@ -58,7 +60,8 @@ class GeneratorTester(unittest.TestCase):
         a.squad.substitutes[-1].rating = RatedPlayer.Rating.INTERMEDIATE
         a = p.activities.add()
         a.id.type = ActivityID.Type.SCOURGE_OF_THE_PAST
-        a.id.timestamp_seconds = 1603639859
+        a.id.when.datetime = '2020-10-25T16:30:00+01:00'
+        a.id.when.time_specified = True
         (a.squad.players.add()).gamer_tag = "Cosa58"
         a.squad.players[-1].rating = RatedPlayer.Rating.UNKNOWN
         (a.squad.players.add()).gamer_tag = "Walnut Waffle"
@@ -77,7 +80,8 @@ class GeneratorTester(unittest.TestCase):
         a.squad.substitutes[-1].rating = RatedPlayer.Rating.INTERMEDIATE
         a = p.activities.add()
         a.id.type = ActivityID.Type.GARDEN_OF_SALVATION
-        a.id.timestamp_seconds = 1598387759
+        a.id.when.datetime = '2020-08-25T22:35:00+02:00'
+        a.id.when.time_specified = True
         (a.squad.players.add()).gamer_tag = "Cosa58"
         a.squad.players[-1].rating = RatedPlayer.Rating.INTERMEDIATE
         (a.squad.players.add()).gamer_tag = "Walnut Waffle"
@@ -96,7 +100,8 @@ class GeneratorTester(unittest.TestCase):
         a.squad.substitutes[-1].rating = RatedPlayer.Rating.BEGINNER
         a = p.activities.add()
         a.id.type = ActivityID.Type.WRATH_OF_THE_MACHINE
-        a.id.timestamp_seconds = 1548387759
+        a.id.when.datetime = '2019-01-25T04:42:00+01:00'
+        a.id.when.time_specified = True
         (a.squad.players.add()).gamer_tag = "Cosa58"
         a.squad.players[-1].rating = RatedPlayer.Rating.BEGINNER
         (a.squad.players.add()).gamer_tag = "Walnut Waffle"
@@ -118,11 +123,11 @@ class GeneratorTester(unittest.TestCase):
 
         hash_reference = {
             "Darwin": {
-                0: "464491c1ca317478dec7cd12a4d580562e402de099d57ad628243b87f4076a90",
+                0: "08a3ddc01650945bb2967faf3a361792d096f04b880d21ed9cc4b65b56225866",
                 1: "ca6edfa4febf8e08fe5d43598df552088655d160e4cca75dd1efd80b4eb88568"
             },
             "Linux": {
-                0: "42c4520a7127475b52b8e2743a2a949709ab7a9e5d9bdc9c6fedf399b4f5f1e0",
+                0: "5c68cd5e8b766ae3a7b5ab9935c411e638c236bcbb93d49c3b9a4dba1f25a3a9",
                 1: "5f6f8181c66235040e946b7c16a7f8407cdc8d0c2b089095f5dfd3317e11f5ff"
             }
         }

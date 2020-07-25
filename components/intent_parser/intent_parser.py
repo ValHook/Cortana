@@ -72,9 +72,10 @@ class Parser:
 
     def parse(self):
         """
-        Parser entry point. Returns an intent if the message is a bot intent or None if not.
+        Parser entry point.
+        :return: An intent if the message is a bot intent or None if not.
         i.e Messages starting with !raid are treated as intents. The rest are not.
-        Raises an error if the message is an intent but ill-formed.
+        :raises: An error if the message is an intent but ill-formed.
         """
         words = re.split(r"\s+", self.__message)
         next_word = words.pop(0)
@@ -98,28 +99,44 @@ class Parser:
         return self.parse_upsert_squad_intent([next_word] + words, False)
 
     def parse_sync_intent(self, initial_words):
-        """Returns a sync intent or raises an error."""
+        """
+        :param: The words after !raid sync.
+        :return: A sync intent.
+        :raises: If the words are not empty.
+        """
         self.assert_words_empty(initial_words)
         intent = Intent()
         intent.sync_bundle = True
         return intent
 
     def parse_lastsync_intent(self, initial_words):
-        """Returns a lastsync intent or raises an error."""
+        """
+        :param: The words after !raid lastsync.
+        :return: A lastsync intent.
+        :raises: If the words are not empty.
+        """
         self.assert_words_empty(initial_words)
         intent = Intent()
         intent.get_last_bundle_sync_datetime = True
         return intent
 
     def parse_images_intent(self, initial_words):
-        """Returns a generate images intent or raises an error."""
+        """
+        :param: The words after !raid images.
+        :return: An image generation intent.
+        :raises: If the words are not empty.
+        """
         self.assert_words_empty(initial_words)
         intent = Intent()
         intent.generate_images = True
         return intent
 
     def parse_update_datetime_intent(self, initial_words):
-        """Returns a date time update intent or raises an error."""
+        """
+        :param: The words after !raid date.
+        :return: A datetime update intent.
+        :raises: If the words are not in the format (old_datetime) [new_datetime].
+        """
         (activity_type, words) = self.parse_activity_type(initial_words)
         (old_date_time, _, words) = self.parse_datetime(words)
         try:
@@ -139,7 +156,11 @@ class Parser:
         return intent
 
     def parse_update_milestone_intent(self, initial_words):
-        """Returns a milestone update intent or raises an error."""
+        """
+        :param: The words after !raid milestone.
+        :return: A milestone update intent.
+        :raises: If the words are not in the format [activity_type] (datetime) [milestone].
+        """
         (activity_type, words) = self.parse_activity_type(initial_words)
         date_time = None
         try:
@@ -157,7 +178,11 @@ class Parser:
         return intent
 
     def parse_finish_intent(self, initial_words):
-        """Returns a finish intent or raises an error."""
+        """
+        :param: The words after !raid finish.
+        :return: A finish marking intent.
+        :raises: If the words are not in the format [activity_type] (datetime).
+        """
         (activity_type, words) = self.parse_activity_type(initial_words)
         date_time = None
         try:
@@ -174,7 +199,12 @@ class Parser:
         return intent
 
     def parse_upsert_squad_intent(self, initial_words, backup):
-        """Returns a squad upsert intent or raises an error."""
+        """
+        :param: The words after !raid or !raid backup.
+        :return: A squad upsert intent.
+        :raises: If the words are not in the format [activity_type] (datetime) [players].
+        Each player can be prefixed with a + or a - if needed.
+        """
         (activity_type, words) = self.parse_activity_type(initial_words)
         date_time = None
         try:
@@ -233,8 +263,9 @@ class Parser:
     def parse_activity_type(self, initial_words):
         """
         Matches an activity type from the given word array.
-        Returns (the best matching activity type, the rightmost unused words).
-        Throws an exception in case of failure.
+        :param initial_words: A word array
+        :return: A (the best matching activity type, the rightmost unused words) tuple.
+        :raises: If the are not in the format [activity_type] (noise)
         """
         if len(initial_words) == 0:
             raise ValueError("Il manque un nom d'activité")
@@ -274,9 +305,9 @@ class Parser:
     def parse_datetime(self, initial_words):
         """
         Matches a datetime from the given word array.
-        Returns (the best matching date time, with_time? bool, the rightmost unused words).
-        Several formats are supported.
-        Raises an error if no match is found.
+        :param initial_words: A word array
+        :return: A (the best matching date time, with_time? bool, the rightmost unused words) tuple.
+        :raises: If the are not in the format [datetime] (noise)
         """
         if len(initial_words) == 0:
             raise ValueError('Il manque une date et une heure')
@@ -342,8 +373,9 @@ class Parser:
     def parse_gamer_tag(self, initial_words):
         """
         Matches a gamer tag of the bundle from the given word array.
-        Returns (best matching gamer tag or None, add? or remove bool, the rightmost unused words).
-        Throws an exception in case of failure.
+        :param initial_words: A word array
+        :return: (best matching gamer tag or None, add? or remove bool, the rightmost unused words).
+        :raises: If the are not in the format [gamer_tag] (noise)
         """
         if len(initial_words) == 0:
             raise ValueError("Il manque un gamer tag")
@@ -391,7 +423,12 @@ class Parser:
 
     def levensthein(self, str_a, str_b, filter_out_regex):
         """
-        Returns the Levensthein distance between str_a and str_b after applying filter_out_regex.
+        :param str_a: One of the two compared strings.
+        :param str_b: The other string.
+        :param filter_out_regex: A regex matching all the characters you want to ignore for the
+        comparison.
+        :return: Levensthein distance between the two strings after lowering them and stripping out
+        characters from filter_out_regex.
         """
         str_a = unidecode.unidecode(str_a)
         str_b = unidecode.unidecode(str_b)
@@ -417,8 +454,8 @@ class Parser:
 
     def make_when(self, date_time):
         """
-        Converts the given date time into a when.
-        Returns None if the input is not valid.
+        :param: A python datetime.
+        :return: A When proto or None if the input is not valid.
         """
         try:
             when = ActivityID.When()
@@ -432,7 +469,9 @@ class Parser:
             return None
 
     def assert_words_empty(self, words):
-        """Raises an error if the words are empty."""
+        """
+        :raises: An error if the words are empty.
+        """
         if len(words) > 0:
             rest = " ".join(words)
             raise ValueError("La commande aurait dû s'arrêter juste avant " + rest)

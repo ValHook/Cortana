@@ -15,11 +15,11 @@ message Intent {
   ActivityID activity_id = 1;
   oneof type {
     SquadDelta upsert_squad = 2;
-    int64 update_timestamp = 3;
+    ActivityID.When update_when = 3;
     bool mark_finished = 4;
     string set_milestone = 5;
     bool generate_images = 6;
     bool sync_bundle = 7;
-    bool get_last_bundle_sync_timestamp = 8;
+    bool get_last_bundle_sync_datetime = 8;
   }
 }

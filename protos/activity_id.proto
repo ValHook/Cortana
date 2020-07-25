@@ -25,6 +25,12 @@ message ActivityID {
     WRATH_OF_THE_MACHINE_PRESTIGE = 18;
   }
 
+  message When {
+    // Datetime in ISO format. Timezone is omitted if no time is specified.
+    string datetime = 1;
+    bool time_specified = 2;
+  }
+
   Type type = 1;
-  int64 timestamp_seconds = 2;
+  When when = 2;
 }

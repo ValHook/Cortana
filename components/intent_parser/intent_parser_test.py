@@ -191,6 +191,14 @@ class ParserTest(unittest.TestCase):
             noise_array = list(filter(len, re.split(r"\s+", noise)))
             self.assertRaises(ValueError, self.sut.parse_gamer_tag, noise_array)
 
+    def test_parse_clearpast_intent(self):
+        """Verifies clear past intents can properly be parsed."""
+        sut = intent_parser.Parser("!raid clearpast", SUT_BUNDLE, SUT_NOW, SUT_LOCALE)
+        intent = sut.parse()
+        expectation = Intent()
+        expectation.clear_all_activities_from_past_weeks = True
+        self.assertEqual(intent, expectation)
+
     def test_parse_sync_intent(self):
         """Verifies bundle sync intents can properly be parsed."""
         sut = intent_parser.Parser("!raid sync", SUT_BUNDLE, SUT_NOW, SUT_LOCALE)
@@ -350,6 +358,24 @@ class ParserTest(unittest.TestCase):
         date_time = datetime(2020, 9, 5, hour=18, tzinfo=SUT_TIMEZONE)
         expectation.activity_id.when.CopyFrom(sut.make_when(date_time))
         expectation.mark_finished = True
+        self.assertEqual(intent, expectation)
+
+    def test_parse_remove_intent(self):
+        """Verifies remove intents can properly be parsed."""
+        sut = intent_parser.Parser("!raid remove couronne", SUT_BUNDLE, SUT_NOW, SUT_LOCALE)
+        intent = sut.parse()
+        expectation = Intent()
+        expectation.activity_id.type = ActivityID.Type.CROWN_OF_SORROW
+        expectation.remove = True
+        self.assertEqual(intent, expectation)
+
+        sut = intent_parser.Parser("!raid remove fleau 12/9 21h30", SUT_BUNDLE, SUT_NOW, SUT_LOCALE)
+        intent = sut.parse()
+        expectation = Intent()
+        expectation.activity_id.type = ActivityID.Type.SCOURGE_OF_THE_PAST
+        date_time = datetime(2020, 9, 12, hour=21, minute=30, tzinfo=SUT_TIMEZONE)
+        expectation.activity_id.when.CopyFrom(sut.make_when(date_time))
+        expectation.remove = True
         self.assertEqual(intent, expectation)
 
     def test_parse_create_squad_intent(self):

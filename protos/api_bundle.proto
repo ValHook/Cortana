@@ -12,5 +12,7 @@ message APIBundle {
   	}
     repeated ActivityStat activity_stats = 1;
   }
-  map<string, Stats> stats_by_player = 1; 
+  map<string, Stats> stats_by_player = 1;
+  // Datetime in ISO format.
+  string last_sync_datetime = 2;
 }

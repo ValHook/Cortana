@@ -5,23 +5,32 @@ import "protos/squad.proto";
 
 package protos;
 
-message Intent {
+message GlobalIntent {
+  oneof type {
+    bool generate_images = 1;
+    bool sync_bundle = 2;
+    bool get_last_bundle_sync_datetime =3;
+    bool clear_all_activities_from_past_weeks = 4;
+  }
+}
+message ActivityIntent {
   message SquadDelta {
     Squad added = 1;
     Squad removed = 2;
   }
-
-  // Only set when the type requires it.
   ActivityID activity_id = 1;
   oneof type {
     SquadDelta upsert_squad = 2;
     ActivityID.When update_when = 3;
     bool mark_finished = 4;
     string set_milestone = 5;
-    bool generate_images = 6;
-    bool sync_bundle = 7;
-    bool get_last_bundle_sync_datetime = 8;
-    bool remove = 9;
-    bool clear_all_activities_from_past_weeks = 10;
+    bool remove = 6;
+  }
+}
+
+message Intent {
+  oneof type {
+    GlobalIntent global_intent = 1;
+    ActivityIntent activity_intent = 2;
   }
 }

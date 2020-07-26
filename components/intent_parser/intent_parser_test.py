@@ -4,6 +4,7 @@ import re
 import unittest
 from dateutil import tz
 from components.intent_parser import intent_parser
+from components.converters.when import to_when
 from protos.activity_id_pb2 import ActivityID
 from protos.api_bundle_pb2 import APIBundle
 from protos.intent_pb2 import Intent
@@ -15,30 +16,13 @@ SUT_TIMEZONE = tz.gettz('Europe/Paris')
 SUT_NOW = datetime(2020, 8, 12, 18, 15, 0, 0, SUT_TIMEZONE)
 SUT_LOCALE = 'fr'
 
+
 class ParserTest(unittest.TestCase):
     """Test class for the intent parser."""
 
     def setUp(self):
         """Sets up a basic sut."""
-        self.sut = intent_parser.Parser(SUT_NOW, SUT_LOCALE)
-
-    def test_make_when(self):
-        """Verifies the datetime to when converter works as expected."""
-        when = self.sut.make_when(SUT_NOW)
-        expectation = ActivityID.When()
-        expectation.datetime = '2020-08-12T18:15:00+02:00'
-        expectation.time_specified = True
-        self.assertEqual(when, expectation)
-
-        when = self.sut.make_when(datetime(2021, 1, 10))
-        expectation = ActivityID.When()
-        expectation.datetime = '2021-01-10'
-        expectation.time_specified = False
-        self.assertEqual(when, expectation)
-
-        when = self.sut.make_when(None)
-        expectation = None
-        self.assertEqual(when, expectation)
+        self.sut = intent_parser.Parser(SUT_LOCALE)
 
     def test_parse_activity_type(self):
         """Verifies the activity-type sub-parser."""
@@ -140,7 +124,7 @@ class ParserTest(unittest.TestCase):
                 noise_array = list(filter(len, re.split(r"\s+", noise)))
                 query_and_noise_array = query_array + noise_array
                 debug_str = " ".join(query_and_noise_array) + " => " + date_expectation.isoformat()
-                result = self.sut.parse_datetime(query_and_noise_array)
+                result = self.sut.parse_datetime(query_and_noise_array, SUT_NOW)
                 self.assertEqual(date_expectation, result[0], debug_str)
                 self.assertEqual(with_time_expectation, result[1], debug_str)
                 self.assertEqual(noise_array, result[2], debug_str)
@@ -158,7 +142,7 @@ class ParserTest(unittest.TestCase):
             ""]
         for noise in noises:
             noise_array = re.split(r"\s+", noise)
-            self.assertRaises(ValueError, self.sut.parse_datetime, noise_array)
+            self.assertRaises(ValueError, self.sut.parse_datetime, noise_array, SUT_NOW)
 
     def test_parse_gamer_tag(self):
         """Verifies the gamer tag sub-parser."""
@@ -192,146 +176,154 @@ class ParserTest(unittest.TestCase):
 
     def test_parse_clearpast_intent(self):
         """Verifies clear past intents can properly be parsed."""
-        intent = self.sut.parse("!raid clearpast", SUT_BUNDLE, )
+        intent = self.sut.parse("!raid clearpast", SUT_BUNDLE, SUT_NOW)
         expectation = Intent()
         expectation.global_intent.clear_all_activities_from_past_weeks = True
         self.assertEqual(intent, expectation)
 
     def test_parse_sync_intent(self):
         """Verifies bundle sync intents can properly be parsed."""
-        intent = self.sut.parse("!raid sync", SUT_BUNDLE)
+        intent = self.sut.parse("!raid sync", SUT_BUNDLE, SUT_NOW)
         expectation = Intent()
         expectation.global_intent.sync_bundle = True
         self.assertEqual(intent, expectation)
 
     def test_parse_lastsync_intent(self):
         """Verifies last sync get intents can properly be parsed."""
-        intent = self.sut.parse("!raid lastsync", SUT_BUNDLE)
+        intent = self.sut.parse("!raid lastsync", SUT_BUNDLE, SUT_NOW)
         expectation = Intent()
         expectation.global_intent.get_last_bundle_sync_datetime = True
         self.assertEqual(intent, expectation)
 
     def test_parse_images_intent(self):
         """Verifies image generation intents can properly be parsed."""
-        intent = self.sut.parse("!raid images", SUT_BUNDLE)
+        intent = self.sut.parse("!raid images", SUT_BUNDLE, SUT_NOW)
         expectation = Intent()
         expectation.global_intent.generate_images = True
         self.assertEqual(intent, expectation)
 
     def test_parse_datetime_intent(self):
         """Verifies date time update intents can properly be parsed."""
-        intent = self.sut.parse("!raid date fureur 25/08 19h", SUT_BUNDLE)
+        intent = self.sut.parse("!raid date fureur 25/08 19h", SUT_BUNDLE, SUT_NOW)
         expectation = Intent()
         expectation.activity_intent.activity_id.type = ActivityID.Type.WRATH_OF_THE_MACHINE
         new_date_time = datetime(2020, 8, 25, hour=19, tzinfo=SUT_TIMEZONE)
-        expectation.activity_intent.update_when.CopyFrom(self.sut.make_when(new_date_time))
+        expectation.activity_intent.update_when.CopyFrom(to_when(new_date_time))
         self.assertEqual(intent, expectation)
 
-        intent = self.sut.parse("!raid date caveau vendredi", SUT_BUNDLE)
+        intent = self.sut.parse("!raid date caveau vendredi", SUT_BUNDLE, SUT_NOW)
         expectation = Intent()
         expectation.activity_intent.activity_id.type = ActivityID.Type.VAULT_OF_GLASS
         new_date_time = datetime(2020, 8, 14)
-        expectation.activity_intent.update_when.CopyFrom(self.sut.make_when(new_date_time))
+        expectation.activity_intent.update_when.CopyFrom(to_when(new_date_time))
         self.assertEqual(intent, expectation)
 
-        intent = self.sut.parse("!raid date fleau samedi samedi 19h", SUT_BUNDLE)
+        intent = self.sut.parse("!raid date fleau samedi samedi 19h", SUT_BUNDLE, SUT_NOW)
         expectation = Intent()
         expectation.activity_intent.activity_id.type = ActivityID.Type.SCOURGE_OF_THE_PAST
         old_date_time = datetime(2020, 8, 15)
         new_date_time = datetime(2020, 8, 15, hour=19, tzinfo=SUT_TIMEZONE)
-        expectation.activity_intent.activity_id.when. CopyFrom(self.sut.make_when(old_date_time))
-        expectation.activity_intent.update_when.CopyFrom(self.sut.make_when(new_date_time))
+        expectation.activity_intent.activity_id.when. CopyFrom(to_when(old_date_time))
+        expectation.activity_intent.update_when.CopyFrom(to_when(new_date_time))
         self.assertEqual(intent, expectation)
 
-        intent = self.sut.parse("!raid date devoreur demain 21h 30/08 14h30", SUT_BUNDLE)
+        intent = self.sut.parse("!raid date devoreur demain 21h 30/08 14h30", SUT_BUNDLE, SUT_NOW)
         expectation = Intent()
         expectation.activity_intent.activity_id.type = ActivityID.Type.EATER_OF_WORLDS
         old_date_time = datetime(2020, 8, 13, hour=21, tzinfo=SUT_TIMEZONE)
         new_date_time = datetime(2020, 8, 30, hour=14, minute=30, tzinfo=SUT_TIMEZONE)
-        expectation.activity_intent.activity_id.when. CopyFrom(self.sut.make_when(old_date_time))
-        expectation.activity_intent.update_when.CopyFrom(self.sut.make_when(new_date_time))
+        expectation.activity_intent.activity_id.when. CopyFrom(to_when(old_date_time))
+        expectation.activity_intent.update_when.CopyFrom(to_when(new_date_time))
         self.assertEqual(intent, expectation)
 
-        intent = self.sut.parse("!raid date jardin du salut 22/08 23/08", SUT_BUNDLE)
+        intent = self.sut.parse("!raid date jardin du salut 22/08 23/08", SUT_BUNDLE, SUT_NOW)
         expectation = Intent()
         expectation.activity_intent.activity_id.type = ActivityID.Type.GARDEN_OF_SALVATION
         old_date_time = datetime(2020, 8, 22)
         new_date_time = datetime(2020, 8, 23)
-        expectation.activity_intent.activity_id.when. CopyFrom(self.sut.make_when(old_date_time))
-        expectation.activity_intent.update_when.CopyFrom(self.sut.make_when(new_date_time))
+        expectation.activity_intent.activity_id.when. CopyFrom(to_when(old_date_time))
+        expectation.activity_intent.update_when.CopyFrom(to_when(new_date_time))
         self.assertEqual(intent, expectation)
 
-        intent = self.sut.parse("!raid date dernier voeu 20/08 16h45 19/08", SUT_BUNDLE)
+        intent = self.sut.parse("!raid date dernier voeu 20/08 16h45 19/08", SUT_BUNDLE, SUT_NOW)
         expectation = Intent()
         expectation.activity_intent.activity_id.type = ActivityID.Type.LAST_WISH
         old_date_time = datetime(2020, 8, 20, hour=16, minute=45, tzinfo=SUT_TIMEZONE)
         new_date_time = datetime(2020, 8, 19)
-        expectation.activity_intent.activity_id.when. CopyFrom(self.sut.make_when(old_date_time))
-        expectation.activity_intent.update_when.CopyFrom(self.sut.make_when(new_date_time))
+        expectation.activity_intent.activity_id.when. CopyFrom(to_when(old_date_time))
+        expectation.activity_intent.update_when.CopyFrom(to_when(new_date_time))
         self.assertEqual(intent, expectation)
 
-        intent = self.sut.parse("!raid date dernier voeu 20/08 16h45 19/08 21h30", SUT_BUNDLE)
+        intent = self.sut.parse(
+            "!raid date dernier voeu 20/08 16h45 19/08 21h30",
+            SUT_BUNDLE,
+            SUT_NOW
+        )
         expectation = Intent()
         expectation.activity_intent.activity_id.type = ActivityID.Type.LAST_WISH
         old_date_time = datetime(2020, 8, 20, hour=16, minute=45, tzinfo=SUT_TIMEZONE)
         new_date_time = datetime(2020, 8, 19, hour=21, minute=30, tzinfo=SUT_TIMEZONE)
-        expectation.activity_intent.activity_id.when. CopyFrom(self.sut.make_when(old_date_time))
-        expectation.activity_intent.update_when.CopyFrom(self.sut.make_when(new_date_time))
+        expectation.activity_intent.activity_id.when. CopyFrom(to_when(old_date_time))
+        expectation.activity_intent.update_when.CopyFrom(to_when(new_date_time))
         self.assertEqual(intent, expectation)
 
     def test_parse_milestone_intent(self):
         """Verifies milestone intents can properly be parsed."""
-        intent = self.sut.parse("!raid milestone calus prestige save au boss", SUT_BUNDLE)
+        intent = self.sut.parse("!raid milestone calus prestige save au boss", SUT_BUNDLE, SUT_NOW)
         expectation = Intent()
         expectation.activity_intent.activity_id.type = ActivityID.Type.LEVIATHAN_PRESTIGE
         expectation.activity_intent.set_milestone = "Save au boss"
         self.assertEqual(intent, expectation)
 
-        intent = self.sut.parse("!raid milestone couronne 31/8 21h45 reporté", SUT_BUNDLE)
+        intent = self.sut.parse("!raid milestone couronne 31/8 21h45 reporté", SUT_BUNDLE, SUT_NOW)
         expectation = Intent()
         expectation.activity_intent.activity_id.type = ActivityID.Type.CROWN_OF_SORROW
         date_time = datetime(2020, 8, 31, hour=21, minute=45, tzinfo=SUT_TIMEZONE)
-        expectation.activity_intent.activity_id.when. CopyFrom(self.sut.make_when(date_time))
+        expectation.activity_intent.activity_id.when. CopyFrom(to_when(date_time))
         expectation.activity_intent.set_milestone = "Reporté"
         self.assertEqual(intent, expectation)
 
-        intent = self.sut.parse("!raid milestone dernier voeu demain save étape 2", SUT_BUNDLE)
+        intent = self.sut.parse(
+            "!raid milestone dernier voeu demain save étape 2",
+            SUT_BUNDLE,
+            SUT_NOW
+        )
         expectation = Intent()
         expectation.activity_intent.activity_id.type = ActivityID.Type.LAST_WISH
         date_time = datetime(2020, 8, 13)
-        expectation.activity_intent.activity_id.when. CopyFrom(self.sut.make_when(date_time))
+        expectation.activity_intent.activity_id.when. CopyFrom(to_when(date_time))
         expectation.activity_intent.set_milestone = "Save étape 2"
         self.assertEqual(intent, expectation)
 
     def test_parse_finish_intent(self):
         """Verifies finish intents can properly be parsed."""
-        intent = self.sut.parse("!raid finish jds", SUT_BUNDLE)
+        intent = self.sut.parse("!raid finish jds", SUT_BUNDLE, SUT_NOW)
         expectation = Intent()
         expectation.activity_intent.activity_id.type = ActivityID.Type.GARDEN_OF_SALVATION
         expectation.activity_intent.mark_finished = True
         self.assertEqual(intent, expectation)
 
-        intent = self.sut.parse("!raid finish flèche 5/9 18h", SUT_BUNDLE)
+        intent = self.sut.parse("!raid finish flèche 5/9 18h", SUT_BUNDLE, SUT_NOW)
         expectation = Intent()
         expectation.activity_intent.activity_id.type = ActivityID.Type.SPIRE_OF_STARS
         date_time = datetime(2020, 9, 5, hour=18, tzinfo=SUT_TIMEZONE)
-        expectation.activity_intent.activity_id.when. CopyFrom(self.sut.make_when(date_time))
+        expectation.activity_intent.activity_id.when. CopyFrom(to_when(date_time))
         expectation.activity_intent.mark_finished = True
         self.assertEqual(intent, expectation)
 
     def test_parse_remove_intent(self):
         """Verifies remove intents can properly be parsed."""
-        intent = self.sut.parse("!raid remove couronne", SUT_BUNDLE)
+        intent = self.sut.parse("!raid remove couronne", SUT_BUNDLE, SUT_NOW)
         expectation = Intent()
         expectation.activity_intent.activity_id.type = ActivityID.Type.CROWN_OF_SORROW
         expectation.activity_intent.remove = True
         self.assertEqual(intent, expectation)
 
-        intent = self.sut.parse("!raid remove fleau 12/9 21h30", SUT_BUNDLE)
+        intent = self.sut.parse("!raid remove fleau 12/9 21h30", SUT_BUNDLE, SUT_NOW)
         expectation = Intent()
         expectation.activity_intent.activity_id.type = ActivityID.Type.SCOURGE_OF_THE_PAST
         date_time = datetime(2020, 9, 12, hour=21, minute=30, tzinfo=SUT_TIMEZONE)
-        expectation.activity_intent.activity_id.when. CopyFrom(self.sut.make_when(date_time))
+        expectation.activity_intent.activity_id.when. CopyFrom(to_when(date_time))
         expectation.activity_intent.remove = True
         self.assertEqual(intent, expectation)
 
@@ -339,7 +331,8 @@ class ParserTest(unittest.TestCase):
         """Verifies create squad intents with main players can properly be parsed."""
         intent = self.sut.parse(
             "!raid jds cosa croptus Walnut Waffle darklight hartog Franstuk",
-            SUT_BUNDLE
+            SUT_BUNDLE,
+            SUT_NOW
         )
         expectation = Intent()
         expectation.activity_intent.activity_id.type = ActivityID.Type.GARDEN_OF_SALVATION
@@ -364,11 +357,15 @@ class ParserTest(unittest.TestCase):
         expectation.activity_intent.upsert_squad.added.players.append(player)
         self.assertEqual(intent, expectation)
 
-        intent = self.sut.parse("!raid fleau demain 19h Oby1Chik live x gamling", SUT_BUNDLE)
+        intent = self.sut.parse(
+            "!raid fleau demain 19h Oby1Chik live x gamling",
+            SUT_BUNDLE,
+            SUT_NOW
+        )
         expectation = Intent()
         expectation.activity_intent.activity_id.type = ActivityID.Type.SCOURGE_OF_THE_PAST
         date_time = datetime(2020, 8, 13, hour=19, tzinfo=SUT_TIMEZONE)
-        expectation.activity_intent.activity_id.when. CopyFrom(self.sut.make_when(date_time))
+        expectation.activity_intent.activity_id.when. CopyFrom(to_when(date_time))
         player = RatedPlayer()
         player.gamer_tag = "Oby1Chick"
         player.rating = RatedPlayer.Rating.BEGINNER
@@ -380,12 +377,13 @@ class ParserTest(unittest.TestCase):
 
         intent = self.sut.parse(
             "!raid couronne 15/08 snipro pistache espita Jezebell NaughtySOft",
-            SUT_BUNDLE
+            SUT_BUNDLE,
+            SUT_NOW
         )
         expectation = Intent()
         expectation.activity_intent.activity_id.type = ActivityID.Type.CROWN_OF_SORROW
         date_time = datetime(2020, 8, 15)
-        expectation.activity_intent.activity_id.when. CopyFrom(self.sut.make_when(date_time))
+        expectation.activity_intent.activity_id.when. CopyFrom(to_when(date_time))
         player = RatedPlayer()
         player.gamer_tag = "snippro34"
         player.rating = RatedPlayer.Rating.INTERMEDIATE
@@ -404,11 +402,12 @@ class ParserTest(unittest.TestCase):
         intent = self.sut.parse(
             "!raid dernier veu dimanche 14h45 affectevil xxmariexx duality cobra FranckRabbit",
             SUT_BUNDLE,
+            SUT_NOW
         )
         expectation = Intent()
         expectation.activity_intent.activity_id.type = ActivityID.Type.LAST_WISH
         date_time = datetime(2020, 8, 16, hour=14, minute=45, tzinfo=SUT_TIMEZONE)
-        expectation.activity_intent.activity_id.when. CopyFrom(self.sut.make_when(date_time))
+        expectation.activity_intent.activity_id.when. CopyFrom(to_when(date_time))
         player = RatedPlayer()
         player.gamer_tag = "affectevil"
         player.rating = RatedPlayer.Rating.BEGINNER
@@ -429,6 +428,7 @@ class ParserTest(unittest.TestCase):
         intent = self.sut.parse(
             "!raid vœu +cosa -croptus -klaexy +darklight -hartog +Franstuk -ObyChick +kyzerjo",
             SUT_BUNDLE,
+            SUT_NOW
         )
         expectation = Intent()
         expectation.activity_intent.activity_id.type = ActivityID.Type.LAST_WISH
@@ -462,11 +462,12 @@ class ParserTest(unittest.TestCase):
         intent = self.sut.parse(
             "!raid calus prestige demain 19h +Oby1Chik -live x gamling",
             SUT_BUNDLE,
+            SUT_NOW
         )
         expectation = Intent()
         expectation.activity_intent.activity_id.type = ActivityID.Type.LEVIATHAN_PRESTIGE
         date_time = datetime(2020, 8, 13, hour=19, tzinfo=SUT_TIMEZONE)
-        expectation.activity_intent.activity_id.when. CopyFrom(self.sut.make_when(date_time))
+        expectation.activity_intent.activity_id.when. CopyFrom(to_when(date_time))
         player = RatedPlayer()
         player.gamer_tag = "Oby1Chick"
         player.rating = RatedPlayer.Rating.BEGINNER
@@ -479,11 +480,12 @@ class ParserTest(unittest.TestCase):
         intent = self.sut.parse(
             "!raid flèche prestige 30/08 -snipro -pistache espita -Jezebell +NaughtySOft -cosa",
             SUT_BUNDLE,
+            SUT_NOW
         )
         expectation = Intent()
         expectation.activity_intent.activity_id.type = ActivityID.Type.SPIRE_OF_STARS_PRESTIGE
         date_time = datetime(2020, 8, 30)
-        expectation.activity_intent.activity_id.when. CopyFrom(self.sut.make_when(date_time))
+        expectation.activity_intent.activity_id.when. CopyFrom(to_when(date_time))
         player = RatedPlayer()
         player.gamer_tag = "snippro34"
         player.rating = RatedPlayer.Rating.BEGINNER
@@ -505,11 +507,12 @@ class ParserTest(unittest.TestCase):
         intent = self.sut.parse(
             "!raid dévoreur dimanche 20h45 SuperFayaChonch +xxmariexx -duality cobra -carnage",
             SUT_BUNDLE,
+            SUT_NOW
         )
         expectation = Intent()
         expectation.activity_intent.activity_id.type = ActivityID.Type.EATER_OF_WORLDS
         date_time = datetime(2020, 8, 16, hour=20, minute=45, tzinfo=SUT_TIMEZONE)
-        expectation.activity_intent.activity_id.when. CopyFrom(self.sut.make_when(date_time))
+        expectation.activity_intent.activity_id.when. CopyFrom(to_when(date_time))
         player = RatedPlayer()
         player.gamer_tag = "SuperFayaChonch"
         player.rating = RatedPlayer.Rating.INTERMEDIATE
@@ -528,11 +531,12 @@ class ParserTest(unittest.TestCase):
         intent = self.sut.parse(
             "!raid backup calus prestige samedi 21h30 affectevil bab x waza",
             SUT_BUNDLE,
+            SUT_NOW
         )
         expectation = Intent()
         expectation.activity_intent.activity_id.type = ActivityID.Type.LEVIATHAN_PRESTIGE
         date_time = datetime(2020, 8, 15, hour=21, minute=30, tzinfo=SUT_TIMEZONE)
-        expectation.activity_intent.activity_id.when. CopyFrom(self.sut.make_when(date_time))
+        expectation.activity_intent.activity_id.when. CopyFrom(to_when(date_time))
         player = RatedPlayer()
         player.gamer_tag = "affectevil"
         player.rating = RatedPlayer.Rating.BEGINNER
@@ -545,6 +549,7 @@ class ParserTest(unittest.TestCase):
         intent = self.sut.parse(
             "!raid backup vœu +darklucifel -croptus -strikers frwyx -hartog Franstuk +kyzerjo",
             SUT_BUNDLE,
+            SUT_NOW
         )
         expectation = Intent()
         expectation.activity_intent.activity_id.type = ActivityID.Type.LAST_WISH

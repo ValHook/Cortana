@@ -6,6 +6,7 @@ py_library(
     name = "intent_parser",
     srcs = ["intent_parser.py"],
     deps = [
+        "//components/converters:when",
         "//protos:api_bundle",
         "//protos:intent",
         requirement("dateparser"),

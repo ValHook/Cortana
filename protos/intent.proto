@@ -2,6 +2,7 @@ syntax = "proto3";
 
 import "protos/activity_id.proto";
 import "protos/squad.proto";
+import "protos/when.proto";
 
 package protos;
 
@@ -21,7 +22,7 @@ message ActivityIntent {
   ActivityID activity_id = 1;
   oneof type {
     SquadDelta upsert_squad = 2;
-    ActivityID.When update_when = 3;
+    When update_when = 3;
     bool mark_finished = 4;
     string set_milestone = 5;
     bool remove = 6;

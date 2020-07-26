@@ -1,4 +1,6 @@
 from concurrent.futures import ThreadPoolExecutor
+from datetime import datetime
+from datetime import tzinfo
 from functools import reduce
 import itertools
 import requests
@@ -45,6 +47,7 @@ DESTINY_2_ACTIVITIES_BY_HASH = {
     2659723068: ActivityID.Type.GARDEN_OF_SALVATION,
 }
 
+
 class Fetcher:
     """Parser for user input (intents)."""
 
@@ -55,15 +58,19 @@ class Fetcher:
         self.__session = None
         self.__executor = ThreadPoolExecutor(max_workers=MAX_NETWORK_WORKERS)
 
-    def fetch(self):
+    def fetch(self, now):
         """
         Fetches all stats for Destiny 1 and 2 players in the clan watchlists.
+        :param now: Now as a datetime.
         :return: The fetched APIBundle.
         """
+        assert isinstance(now, datetime), "Horloge non configurée"
+        assert isinstance(now.tzinfo, tzinfo), "Fuseau horaire non configuré"
         self.start_new_session()
         destiny2_data = self.fetch_destiny2_data()
         self.close_session()
         bundle = APIBundle()
+        bundle.last_sync_datetime = now.isoformat()
         for row in destiny2_data:
             gamer_tag = row[0]
             stat = APIBundle.Stats.ActivityStat()

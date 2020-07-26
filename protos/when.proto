@@ -1,0 +1,9 @@
+syntax = "proto3";
+
+package protos;
+
+message When {
+  // Datetime in ISO format. Timezone is omitted if no time is specified.
+  string datetime = 1;
+  bool time_specified = 2;
+}

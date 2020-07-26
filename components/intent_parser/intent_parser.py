@@ -5,7 +5,7 @@ import unidecode
 import dateparser
 from protos.activity_id_pb2 import ActivityID
 from protos.api_bundle_pb2 import APIBundle
-from protos.intent_pb2 import Intent
+from protos.intent_pb2 import Intent, ActivityIntent
 from protos.rated_player_pb2 import RatedPlayer
 from protos.squad_pb2 import Squad
 
@@ -110,7 +110,7 @@ class Parser:
         """
         self.assert_words_empty(initial_words)
         intent = Intent()
-        intent.clear_all_activities_from_past_weeks = True
+        intent.global_intent.clear_all_activities_from_past_weeks = True
         return intent
 
     def parse_sync_intent(self, initial_words):
@@ -121,7 +121,7 @@ class Parser:
         """
         self.assert_words_empty(initial_words)
         intent = Intent()
-        intent.sync_bundle = True
+        intent.global_intent.sync_bundle = True
         return intent
 
     def parse_lastsync_intent(self, initial_words):
@@ -132,7 +132,7 @@ class Parser:
         """
         self.assert_words_empty(initial_words)
         intent = Intent()
-        intent.get_last_bundle_sync_datetime = True
+        intent.global_intent.get_last_bundle_sync_datetime = True
         return intent
 
     def parse_images_intent(self, initial_words):
@@ -143,7 +143,7 @@ class Parser:
         """
         self.assert_words_empty(initial_words)
         intent = Intent()
-        intent.generate_images = True
+        intent.global_intent.generate_images = True
         return intent
 
     def parse_update_datetime_intent(self, initial_words):
@@ -160,14 +160,16 @@ class Parser:
             new_date_time = old_date_time
             old_date_time = None
         self.assert_words_empty(words)
-        intent = Intent()
-        intent.activity_id.type = activity_type
+        activity_intent = ActivityIntent()
+        activity_intent.activity_id.type = activity_type
         old_when = self.make_when(old_date_time)
         new_when = self.make_when(new_date_time)
         if old_when:
-            intent.activity_id.when.CopyFrom(old_when)
+            activity_intent.activity_id.when.CopyFrom(old_when)
         if new_when:
-            intent.update_when.CopyFrom(new_when)
+            activity_intent.update_when.CopyFrom(new_when)
+        intent = Intent()
+        intent.activity_intent.CopyFrom(activity_intent)
         return intent
 
     def parse_update_milestone_intent(self, initial_words):
@@ -182,14 +184,16 @@ class Parser:
             (date_time, _, words) = self.parse_datetime(words)
         except:
             pass
-        intent = Intent()
-        intent.activity_id.type = activity_type
+        activity_intent = ActivityIntent()
+        activity_intent.activity_id.type = activity_type
         when = self.make_when(date_time)
         if when:
-            intent.activity_id.when.CopyFrom(when)
+            activity_intent.activity_id.when.CopyFrom(when)
         if len(words) == 0:
             raise ValueError("Il manque le nom de la milestone")
-        intent.set_milestone = " ".join(words).capitalize()
+        activity_intent.set_milestone = " ".join(words).capitalize()
+        intent = Intent()
+        intent.activity_intent.CopyFrom(activity_intent)
         return intent
 
     def parse_finish_intent(self, initial_words):
@@ -204,13 +208,15 @@ class Parser:
             (date_time, _, words) = self.parse_datetime(words)
         except:
             pass
-        intent = Intent()
-        intent.activity_id.type = activity_type
+        activity_intent = ActivityIntent()
+        activity_intent.activity_id.type = activity_type
         when = self.make_when(date_time)
         if when:
-            intent.activity_id.when.CopyFrom(when)
+            activity_intent.activity_id.when.CopyFrom(when)
         self.assert_words_empty(words)
-        intent.mark_finished = True
+        activity_intent.mark_finished = True
+        intent = Intent()
+        intent.activity_intent.CopyFrom(activity_intent)
         return intent
 
     def parse_remove_intent(self, initial_words):
@@ -225,13 +231,15 @@ class Parser:
             (date_time, _, words) = self.parse_datetime(words)
         except:
             pass
-        intent = Intent()
-        intent.activity_id.type = activity_type
+        activity_intent = ActivityIntent()
+        activity_intent.activity_id.type = activity_type
         when = self.make_when(date_time)
         if when:
-            intent.activity_id.when.CopyFrom(when)
+            activity_intent.activity_id.when.CopyFrom(when)
         self.assert_words_empty(words)
-        intent.remove = True
+        activity_intent.remove = True
+        intent = Intent()
+        intent.activity_intent.CopyFrom(activity_intent)
         return intent
 
     def parse_upsert_squad_intent(self, initial_words, backup, api_bundle):
@@ -249,11 +257,11 @@ class Parser:
             (date_time, _, words) = self.parse_datetime(words)
         except:
             pass
-        intent = Intent()
-        intent.activity_id.type = activity_type
+        activity_intent = ActivityIntent()
+        activity_intent.activity_id.type = activity_type
         when = self.make_when(date_time)
         if when:
-            intent.activity_id.when.CopyFrom(when)
+            activity_intent.activity_id.when.CopyFrom(when)
         at_least_once = False
         added = []
         removed = []
@@ -286,7 +294,7 @@ class Parser:
                 added_squad.substitutes.extend(added)
             else:
                 added_squad.players.extend(added)
-            intent.upsert_squad.added.CopyFrom(added_squad)
+            activity_intent.upsert_squad.added.CopyFrom(added_squad)
 
         if len(removed) > 0:
             removed_squad = Squad()
@@ -294,8 +302,10 @@ class Parser:
                 removed_squad.substitutes.extend(removed)
             else:
                 removed_squad.players.extend(removed)
-            intent.upsert_squad.removed.CopyFrom(removed_squad)
+            activity_intent.upsert_squad.removed.CopyFrom(removed_squad)
 
+        intent = Intent()
+        intent.activity_intent.CopyFrom(activity_intent)
         return intent
 
     def parse_activity_type(self, initial_words):

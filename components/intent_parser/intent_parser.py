@@ -51,30 +51,28 @@ ACTIVITY_NAMES_BY_TYPE[ActivityID.Type.WRATH_OF_THE_MACHINE_PRESTIGE] = [
 INTERMEDIATE_MIN_COMPLETIONS = 6
 EXPERIENCED_MIN_COMPLETIONS = 12
 
+
 class Parser:
     """Parser for user input (intents)."""
 
-    def __init__(self, now, locale):
-        if not isinstance(now, datetime):
-            raise ValueError("Horloge non configurée")
-        if not isinstance(now.tzinfo, tzinfo):
-            raise ValueError("Fuseau horaire non configuré")
+    def __init__(self, locale):
         if not isinstance(locale, str):
             raise ValueError("Locale non configurée")
-        self.__now = now
         self.__locale = locale
 
-    def parse(self, message, api_bundle):
+    def parse(self, message, api_bundle, now):
         """
         Parser entry point.
         :param message: The message to parse.
         :param api_bundle: The API Bundle, used to identify gamer tags and experience levels.
+        :param now: Now as a datetime.
         :return: An intent if the message is a bot intent or None if not.
         i.e Messages starting with !raid are treated as intents. The rest are not.
         :raises: An error if the message is an intent but ill-formed.
         """
-        if not isinstance(message, str):
-            raise ValueError("Message vide")
+        assert isinstance(message, str), "Message vide"
+        assert isinstance(now, datetime), "Horloge non configurée"
+        assert isinstance(now.tzinfo, tzinfo), "Fuseau horaire non configuré"
         if not isinstance(api_bundle, APIBundle) or len(api_bundle.stats_by_player) < 6:
             raise ValueError("API Bundle vide")
         words = re.split(r"\s+", message)
@@ -89,18 +87,18 @@ class Parser:
         if next_word == "images":
             return self.parse_images_intent(words)
         if next_word == "date":
-            return self.parse_update_datetime_intent(words)
+            return self.parse_update_datetime_intent(words, now)
         if next_word == "milestone":
-            return self.parse_update_milestone_intent(words)
+            return self.parse_update_milestone_intent(words, now)
         if next_word == "finish":
-            return self.parse_finish_intent(words)
+            return self.parse_finish_intent(words, now)
         if next_word == "remove":
-            return self.parse_remove_intent(words)
+            return self.parse_remove_intent(words, now)
         if next_word == "clearpast":
             return self.parse_clearpast_intent(words)
         if next_word == "backup":
-            return self.parse_upsert_squad_intent(words, True, api_bundle)
-        return self.parse_upsert_squad_intent([next_word] + words, False, api_bundle)
+            return self.parse_upsert_squad_intent(words, True, api_bundle, now)
+        return self.parse_upsert_squad_intent([next_word] + words, False, api_bundle, now)
 
     def parse_clearpast_intent(self, initial_words):
         """
@@ -146,16 +144,17 @@ class Parser:
         intent.global_intent.generate_images = True
         return intent
 
-    def parse_update_datetime_intent(self, initial_words):
+    def parse_update_datetime_intent(self, initial_words, now):
         """
-        :param: The words after !raid date.
+        :param initial_words: The words after !raid date.
+        :param now: Now as a datetime.
         :return: A datetime update intent.
         :raises: If the words are not in the format (old_datetime) [new_datetime].
         """
         (activity_type, words) = self.parse_activity_type(initial_words)
-        (old_date_time, _, words) = self.parse_datetime(words)
+        (old_date_time, _, words) = self.parse_datetime(words, now)
         try:
-            (new_date_time, _, words) = self.parse_datetime(words)
+            (new_date_time, _, words) = self.parse_datetime(words, now)
         except:
             new_date_time = old_date_time
             old_date_time = None
@@ -172,16 +171,17 @@ class Parser:
         intent.activity_intent.CopyFrom(activity_intent)
         return intent
 
-    def parse_update_milestone_intent(self, initial_words):
+    def parse_update_milestone_intent(self, initial_words, now):
         """
-        :param: The words after !raid milestone.
+        :param initial_words: The words after !raid milestone.
+        :param now: Now as a datetime.
         :return: A milestone update intent.
         :raises: If the words are not in the format [activity_type] (datetime) [milestone].
         """
         (activity_type, words) = self.parse_activity_type(initial_words)
         date_time = None
         try:
-            (date_time, _, words) = self.parse_datetime(words)
+            (date_time, _, words) = self.parse_datetime(words, now)
         except:
             pass
         activity_intent = ActivityIntent()
@@ -196,16 +196,17 @@ class Parser:
         intent.activity_intent.CopyFrom(activity_intent)
         return intent
 
-    def parse_finish_intent(self, initial_words):
+    def parse_finish_intent(self, initial_words, now):
         """
-        :param: The words after !raid finish.
+        :param initial_words: The words after !raid finish.
+        :param now: Now as a datetime.
         :return: A finish marking intent.
         :raises: If the words are not in the format [activity_type] (datetime).
         """
         (activity_type, words) = self.parse_activity_type(initial_words)
         date_time = None
         try:
-            (date_time, _, words) = self.parse_datetime(words)
+            (date_time, _, words) = self.parse_datetime(words, now)
         except:
             pass
         activity_intent = ActivityIntent()
@@ -219,16 +220,17 @@ class Parser:
         intent.activity_intent.CopyFrom(activity_intent)
         return intent
 
-    def parse_remove_intent(self, initial_words):
+    def parse_remove_intent(self, initial_words, now):
         """
-        :param: The words after !raid remove.
+        :param initial_words: The words after !raid remove.
+        :param now: Now as a datetime.
         :return: An activity removal intent.
         :raises: If the worgit ds are not in the format [activity_type] (datetime).
         """
         (activity_type, words) = self.parse_activity_type(initial_words)
         date_time = None
         try:
-            (date_time, _, words) = self.parse_datetime(words)
+            (date_time, _, words) = self.parse_datetime(words, now)
         except:
             pass
         activity_intent = ActivityIntent()
@@ -242,11 +244,12 @@ class Parser:
         intent.activity_intent.CopyFrom(activity_intent)
         return intent
 
-    def parse_upsert_squad_intent(self, initial_words, backup, api_bundle):
+    def parse_upsert_squad_intent(self, initial_words, backup, api_bundle, now):
         """
         :param initial_words: The words after !raid or !raid backup.
         :param backup: A boolean telling whether this upsert squad intent must be for substitutes.
         :param api_bundle: The API Bundle used to resolve gamer tags and experience levels.
+        :param now: Now as a datetime.
         :return: A squad upsert intent.
         :raises: If the words are not in the format [activity_type] (datetime) [players].
         Each player can be prefixed with a + or a - if needed.
@@ -254,7 +257,7 @@ class Parser:
         (activity_type, words) = self.parse_activity_type(initial_words)
         date_time = None
         try:
-            (date_time, _, words) = self.parse_datetime(words)
+            (date_time, _, words) = self.parse_datetime(words, now)
         except:
             pass
         activity_intent = ActivityIntent()
@@ -350,10 +353,11 @@ class Parser:
             )
         return best_activity_so_far, unused_words_for_best_activity_so_far
 
-    def parse_datetime(self, initial_words):
+    def parse_datetime(self, initial_words, now):
         """
         Matches a datetime from the given word array.
-        :param initial_words: A word array
+        :param initial_words: A word array.
+        :param now: Now as a datetime.
         :return: A (the best matching date time, with_time? bool, the rightmost unused words) tuple.
         :raises: If the are not in the format [datetime] (noise)
         """
@@ -377,7 +381,7 @@ class Parser:
                 parsed_datetime = dateparser.parse(
                     query,
                     locales=[self.__locale],
-                    settings={'PREFER_DATES_FROM': 'future', 'RELATIVE_BASE':self.__now}
+                    settings={'PREFER_DATES_FROM': 'future', 'RELATIVE_BASE': now}
                 )
             except:
                 # Dateparser can't deal with the case where the timezone is only present in either
@@ -387,7 +391,7 @@ class Parser:
                     locales=[self.__locale],
                     settings={
                         'PREFER_DATES_FROM': 'future',
-                        'RELATIVE_BASE': self.__now.replace(tzinfo=None)
+                        'RELATIVE_BASE': now.replace(tzinfo=None)
                     }
                 )
             if parsed_datetime is None:
@@ -401,7 +405,7 @@ class Parser:
                 )
             else:
                 with_time = True
-                parsed_datetime = parsed_datetime.replace(tzinfo=self.__now.tzinfo)
+                parsed_datetime = parsed_datetime.replace(tzinfo=now.tzinfo)
             best_datetime_so_far = parsed_datetime
             unused_words_for_best_datetime_so_far = words.copy()
 

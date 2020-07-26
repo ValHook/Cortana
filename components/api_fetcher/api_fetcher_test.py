@@ -1,7 +1,11 @@
+from datetime import datetime
 import os
 import unittest
+from dateutil import tz
 from components.api_fetcher import api_fetcher
 from protos.activity_id_pb2 import ActivityID
+
+SUT_NOW = datetime(2020, 8, 12, 18, 15, 0, 0, tz.gettz('Europe/Paris'))
 
 
 class FetcherTest(unittest.TestCase):
@@ -14,7 +18,8 @@ class FetcherTest(unittest.TestCase):
 
     def test_fetch(self):
         """Makes a fetch call and asserts its contents against some known stuff."""
-        bundle = self.sut.fetch()
+        bundle = self.sut.fetch(SUT_NOW)
+        self.assertEqual(bundle.last_sync_datetime, SUT_NOW.isoformat())
         minimum_expectations = {
             'Walnut Waffle':
             {

@@ -118,8 +118,8 @@ class GeneratorTester(unittest.TestCase):
         a.squad.substitutes[-1].rating = RatedPlayer.Rating.BEGINNER
         (a.squad.substitutes.add()).gamer_tag = "Affectevil"
         a.squad.substitutes[-1].rating = RatedPlayer.Rating.BEGINNER
-        gen = img_generator.Generator(p, tz.gettz('Europe/Paris'), "fr")
-        gifs = gen.generate_images()
+        gen = img_generator.Generator(tz.gettz('Europe/Paris'), "fr")
+        gifs = gen.generate_images(p)
 
         hash_reference = {
             "Darwin": {

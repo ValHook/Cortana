@@ -74,12 +74,10 @@ NUM_SECTIONS = 4
 class Generator:
     """Generates the planning in GIF format."""
 
-    def __init__(self, planning, date_tz, locale):
-        assert isinstance(planning, Planning), "%r is not a Planning instance" % planning
-        assert isinstance(date_tz, tzinfo), "%r is not a tzinfo instance" % date_tz
+    def __init__(self, date_tz, locale):
+        assert isinstance(date_tz, tzinfo), "Fuseau horaire non configuré"
         if not isinstance(locale, str) or len(locale) == 0:
-            raise ValueError("Locale is not a string or is empty")
-        self.__planning = planning
+            raise ValueError("Locale non configurée")
         self.__date_tz = date_tz
         self.__locale = locale
 
@@ -99,15 +97,16 @@ class Generator:
             new_x += (COORDS["section_w"] - width_to_center) / 2
         return (new_x, new_y)
 
-    def write_to_frame(self, frame, banner_number):
+    def write_to_frame(self, frame, banner_number, planning):
         """
         Writes the relevant information for a given GIF frame.
         :param frame: an Image object to write to.
         :param banner_number: an int representing the GIF index.
+        :param planning: The activity planning.
         """
-        max_section = min((banner_number + 1) * NUM_SECTIONS, len(self.__planning.activities))
+        max_section = min((banner_number + 1) * NUM_SECTIONS, len(planning.activities))
         for section in range(banner_number * NUM_SECTIONS, max_section):
-            a = self.__planning.activities[section]
+            a = planning.activities[section]
             name_w = CR.getsize(ACTIVITY_NAMES[a.id.type])[0]
             frame.text(
                 self.move(COORDS["activity"], section, name_w),
@@ -152,13 +151,15 @@ class Generator:
                     fill=COLORS_BY_RATING[p.rating]
                 )
 
-    def generate_images(self):
+    def generate_images(self, planning):
         """
         Generates as many images as needed to display the activity planning.
+        :param planning: The activity planning.
         :return: an array of BytesIO streams containing the GIFs.
         """
+        assert isinstance(planning, Planning), "Planning vide"
         gifs = []
-        needed_banners = ((len(self.__planning.activities) - 1) // NUM_SECTIONS) + 1
+        needed_banners = ((len(planning.activities) - 1) // NUM_SECTIONS) + 1
         for banner_number in range(needed_banners):
             temp = io.BytesIO()
             with Image.open('components/img_generator/assets/empty_banner.gif') as im:
@@ -166,7 +167,7 @@ class Generator:
                 for frame in ImageSequence.Iterator(im):
                     frame = frame.copy().convert('RGBA')
                     d = ImageDraw.Draw(frame)
-                    self.write_to_frame(d, banner_number)
+                    self.write_to_frame(d, banner_number, planning)
                     frames.append(frame)
                 frames[0].save(temp, save_all=True, append_images=frames[1:], format="GIF")
                 gifs.append(temp)

@@ -54,30 +54,30 @@ EXPERIENCED_MIN_COMPLETIONS = 12
 class Parser:
     """Parser for user input (intents)."""
 
-    def __init__(self, message, api_bundle, now, locale):
-        if not isinstance(message, str):
-            raise ValueError("Message vide")
-        if not isinstance(api_bundle, APIBundle) or len(api_bundle.stats_by_player) < 6:
-            raise ValueError("API Bundle vide")
+    def __init__(self, now, locale):
         if not isinstance(now, datetime):
             raise ValueError("Horloge non configurée")
         if not isinstance(now.tzinfo, tzinfo):
             raise ValueError("Fuseau horaire non configuré")
         if not isinstance(locale, str):
             raise ValueError("Locale non configurée")
-        self.__message = message
-        self.__api_bundle = api_bundle
         self.__now = now
         self.__locale = locale
 
-    def parse(self):
+    def parse(self, message, api_bundle):
         """
         Parser entry point.
+        :param message: The message to parse.
+        :param api_bundle: The API Bundle, used to identify gamer tags and experience levels.
         :return: An intent if the message is a bot intent or None if not.
         i.e Messages starting with !raid are treated as intents. The rest are not.
         :raises: An error if the message is an intent but ill-formed.
         """
-        words = re.split(r"\s+", self.__message)
+        if not isinstance(message, str):
+            raise ValueError("Message vide")
+        if not isinstance(api_bundle, APIBundle) or len(api_bundle.stats_by_player) < 6:
+            raise ValueError("API Bundle vide")
+        words = re.split(r"\s+", message)
         next_word = words.pop(0)
         if next_word != '!raid':
             return None
@@ -99,8 +99,8 @@ class Parser:
         if next_word == "clearpast":
             return self.parse_clearpast_intent(words)
         if next_word == "backup":
-            return self.parse_upsert_squad_intent(words, True)
-        return self.parse_upsert_squad_intent([next_word] + words, False)
+            return self.parse_upsert_squad_intent(words, True, api_bundle)
+        return self.parse_upsert_squad_intent([next_word] + words, False, api_bundle)
 
     def parse_clearpast_intent(self, initial_words):
         """
@@ -234,9 +234,11 @@ class Parser:
         intent.remove = True
         return intent
 
-    def parse_upsert_squad_intent(self, initial_words, backup):
+    def parse_upsert_squad_intent(self, initial_words, backup, api_bundle):
         """
-        :param: The words after !raid or !raid backup.
+        :param initial_words: The words after !raid or !raid backup.
+        :param backup: A boolean telling whether this upsert squad intent must be for substitutes.
+        :param api_bundle: The API Bundle used to resolve gamer tags and experience levels.
         :return: A squad upsert intent.
         :raises: If the words are not in the format [activity_type] (datetime) [players].
         Each player can be prefixed with a + or a - if needed.
@@ -257,8 +259,8 @@ class Parser:
         removed = []
         while len(words) > 0 or not at_least_once:
             at_least_once = True
-            gamer_tag, is_add, words = self.parse_gamer_tag(words)
-            stats = self.__api_bundle.stats_by_player[gamer_tag].activity_stats
+            gamer_tag, is_add, words = self.parse_gamer_tag(words, api_bundle)
+            stats = api_bundle.stats_by_player[gamer_tag].activity_stats
             rating = RatedPlayer.Rating.UNKNOWN
             for stat in stats:
                 if stat.activity_type == activity_type:
@@ -406,10 +408,11 @@ class Parser:
             unused_words_for_best_datetime_so_far
         )
 
-    def parse_gamer_tag(self, initial_words):
+    def parse_gamer_tag(self, initial_words, api_bundle):
         """
         Matches a gamer tag of the bundle from the given word array.
         :param initial_words: A word array
+        :param api_bundle: The API Bundle used to resolve gamer tags.
         :return: (best matching gamer tag or None, add? or remove bool, the rightmost unused words).
         :raises: If the are not in the format [gamer_tag] (noise)
         """
@@ -428,7 +431,7 @@ class Parser:
         unused_words_for_best_gamer_tag_so_far = words.copy()
         while len(words) > 0:
             query += " " + words.pop(0)
-            gamer_tags = self.__api_bundle.stats_by_player.keys()
+            gamer_tags = api_bundle.stats_by_player.keys()
             gamer_tags = map(lambda g: (g, self.levensthein(query, g, '[^A-Za-z]+')), gamer_tags)
             gamer_tags = sorted(gamer_tags, key=lambda g: g[1])
             best_gamer_tag = gamer_tags[0][0]

@@ -1,7 +1,8 @@
 import io
-from datetime import datetime, tzinfo
+from datetime import tzinfo
 from babel.dates import format_datetime
 from PIL import Image, ImageDraw, ImageSequence, ImageFont
+from components.converters.when import to_datetime
 from protos.activity_id_pb2 import ActivityID
 from protos.planning_pb2 import Planning
 from protos.rated_player_pb2 import RatedPlayer
@@ -95,7 +96,7 @@ class Generator:
         new_y = coordinates[1] + dy
         if width_to_center:
             new_x += (COORDS["section_w"] - width_to_center) / 2
-        return (new_x, new_y)
+        return new_x, new_y
 
     def write_to_frame(self, frame, banner_number, planning):
         """
@@ -113,9 +114,7 @@ class Generator:
                 ACTIVITY_NAMES[a.id.type], font=CR,
                 fill=COLORS["purple"]
             )
-            date_time = datetime.fromisoformat(a.id.when.datetime)
-            if not date_time.tzinfo:
-                date_time.replace(tzinfo=self.__date_tz)
+            date_time = to_datetime(a.id.when, self.__date_tz)
             date_format = "EEEE d MMMM, à HH:mm" if a.id.when.time_specified else "EEEE d MMMM"
             sdate = format_datetime(
                 date_time,

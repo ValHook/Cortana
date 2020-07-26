@@ -7,6 +7,7 @@ py_library(
     srcs = ["img_generator.py"],
     data = ["//components/img_generator/assets"],
     deps = [
+        "//components/converters:when",
         "//protos:planning",
         requirement("babel"),
         requirement("pillow"),

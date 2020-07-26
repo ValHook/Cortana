@@ -14,6 +14,7 @@ py_proto_library(
 py_proto_library(
     name = "activity_id",
     srcs = ["activity_id.proto"],
+    deps = [":when"],
 )
 
 py_proto_library(
@@ -48,4 +49,9 @@ py_proto_library(
     name = "squad",
     srcs = ["squad.proto"],
     deps = [":rated_player"],
+)
+
+py_proto_library(
+    name = "when",
+    srcs = ["when.proto"],
 )

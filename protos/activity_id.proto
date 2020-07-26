@@ -1,5 +1,7 @@
 syntax = "proto3";
 
+import "protos/when.proto";
+
 package protos;
 
 message ActivityID {
@@ -23,12 +25,6 @@ message ActivityID {
     THE_TAKEN_KING_PRESTIGE = 16;
     WRATH_OF_THE_MACHINE = 17;
     WRATH_OF_THE_MACHINE_PRESTIGE = 18;
-  }
-
-  message When {
-    // Datetime in ISO format. Timezone is omitted if no time is specified.
-    string datetime = 1;
-    bool time_specified = 2;
   }
 
   Type type = 1;

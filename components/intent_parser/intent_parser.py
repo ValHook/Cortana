@@ -8,6 +8,7 @@ from protos.api_bundle_pb2 import APIBundle
 from protos.intent_pb2 import Intent, ActivityIntent
 from protos.rated_player_pb2 import RatedPlayer
 from protos.squad_pb2 import Squad
+from components.converters.when import to_when
 
 ACTIVITY_NAMES_BY_TYPE = {
     ActivityID.Type.LEVIATHAN:
@@ -102,7 +103,7 @@ class Parser:
 
     def parse_clearpast_intent(self, initial_words):
         """
-        :param: The words after !raid clearpast.
+        :param initial_words: The words after !raid clearpast.
         :return: A clear past intent.
         :raises: If the words are not empty.
         """
@@ -113,7 +114,7 @@ class Parser:
 
     def parse_sync_intent(self, initial_words):
         """
-        :param: The words after !raid sync.
+        :param initial_words: The words after !raid sync.
         :return: A sync intent.
         :raises: If the words are not empty.
         """
@@ -124,7 +125,7 @@ class Parser:
 
     def parse_lastsync_intent(self, initial_words):
         """
-        :param: The words after !raid lastsync.
+        :paramn initial_words: The words after !raid lastsync.
         :return: A lastsync intent.
         :raises: If the words are not empty.
         """
@@ -135,7 +136,7 @@ class Parser:
 
     def parse_images_intent(self, initial_words):
         """
-        :param: The words after !raid images.
+        :param initial_words: The words after !raid images.
         :return: An image generation intent.
         :raises: If the words are not empty.
         """
@@ -161,8 +162,8 @@ class Parser:
         self.assert_words_empty(words)
         activity_intent = ActivityIntent()
         activity_intent.activity_id.type = activity_type
-        old_when = self.make_when(old_date_time)
-        new_when = self.make_when(new_date_time)
+        old_when = to_when(old_date_time)
+        new_when = to_when(new_date_time)
         if old_when:
             activity_intent.activity_id.when.CopyFrom(old_when)
         if new_when:
@@ -186,7 +187,7 @@ class Parser:
             pass
         activity_intent = ActivityIntent()
         activity_intent.activity_id.type = activity_type
-        when = self.make_when(date_time)
+        when = to_when(date_time)
         if when:
             activity_intent.activity_id.when.CopyFrom(when)
         if len(words) == 0:
@@ -211,7 +212,7 @@ class Parser:
             pass
         activity_intent = ActivityIntent()
         activity_intent.activity_id.type = activity_type
-        when = self.make_when(date_time)
+        when = to_when(date_time)
         if when:
             activity_intent.activity_id.when.CopyFrom(when)
         self.assert_words_empty(words)
@@ -235,7 +236,7 @@ class Parser:
             pass
         activity_intent = ActivityIntent()
         activity_intent.activity_id.type = activity_type
-        when = self.make_when(date_time)
+        when = to_when(date_time)
         if when:
             activity_intent.activity_id.when.CopyFrom(when)
         self.assert_words_empty(words)
@@ -262,7 +263,7 @@ class Parser:
             pass
         activity_intent = ActivityIntent()
         activity_intent.activity_id.type = activity_type
-        when = self.make_when(date_time)
+        when = to_when(date_time)
         if when:
             activity_intent.activity_id.when.CopyFrom(when)
         at_least_once = False
@@ -504,22 +505,6 @@ class Parser:
                         1 + min((distances[i1], distances[i1 + 1], distances_[-1])))
             distances = distances_
         return distances[-1]
-
-    def make_when(self, date_time):
-        """
-        :param: A python datetime.
-        :return: A When proto or None if the input is not valid.
-        """
-        try:
-            when = ActivityID.When()
-            if date_time.hour != 0 and date_time.minute != 0:
-                when.time_specified = True
-                when.datetime = date_time.isoformat()
-            else:
-                when.datetime = date_time.date().isoformat()
-            return when
-        except:
-            return None
 
     def assert_words_empty(self, words):
         """

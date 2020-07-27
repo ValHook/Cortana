@@ -72,7 +72,7 @@ def make_planning():
     (a.squad.players.add()).gamer_tag = "Oby1Chick"
     a.squad.players[-1].rating = RatedPlayer.Rating.EXPERIENCED
     (a.squad.players.add()).gamer_tag = "Franstuk"
-    a.squad.players[-1].rating = RatedPlayer.Rating.INTERMEDIATE
+    a.squad.players[-1].rating = RatedPlayer.Rating.BEGINNER
     (a.squad.players.add()).gamer_tag = "dark0l1ght"
     a.squad.players[-1].rating = RatedPlayer.Rating.EXPERIENCED
     (a.squad.players.add()).gamer_tag = "croptus"
@@ -246,6 +246,154 @@ class ExecutorTest(unittest.TestCase):
         self.assertIsNone(images)
         updated_planning = self.storage.read_planning()
         self.assertEqual(updated_planning, planning)
+
+    def test_update_players(self):
+        """Verifies update players intents are properly executed."""
+        # Test 1 addition.
+        planning0 = self.storage.read_planning()
+        self.execute("!raid fleche prestige +Walnut Waffle")
+        self.execute("!raid fleche prestige +Walnut Waffle")
+        planning1 = self.storage.read_planning()
+        self.assertEqual(len(planning1.activities[1].squad.players), 3)
+        fleche1 = planning1.activities[1]
+        self.assertEqual(fleche1.squad.players[2].gamer_tag, "Walnut Waffle")
+        self.assertEqual(fleche1.squad.players[2].rating, RatedPlayer.Rating.BEGINNER)
+        self.execute("!raid fleche prestige -Walnut Waffle")
+        planning2 = self.storage.read_planning()
+        self.assertEqual(planning2, planning0)
+
+        # Test additions and deletions.
+        fleau0 = planning0.activities[2]
+        self.execute("!raid fleau xxMarie -Walnut Waffle")
+        self.execute("!raid fleau du passé -Franstuk +kyzerjo -klaexy")
+        planning3 = self.storage.read_planning()
+        fleau1 = planning3.activities[2]
+        self.assertEqual(fleau1.squad.players[1].gamer_tag, "Oby1Chick")
+        self.assertEqual(fleau1.squad.players[3].gamer_tag, "croptus")
+        self.assertEqual(fleau1.squad.players[4].gamer_tag, "xXmarie91Xx")
+        self.assertEqual(fleau1.squad.players[4].rating, RatedPlayer.Rating.BEGINNER)
+        self.assertEqual(fleau1.squad.players[5].gamer_tag, "kyzerjo88")
+        self.assertEqual(fleau1.squad.players[5].rating, RatedPlayer.Rating.EXPERIENCED)
+        self.execute("!raid fleau -Mariexx +Walnut Waffle -kyzerjo +Franstuck")
+        planning4 = self.storage.read_planning()
+        fleau2 = planning4.activities[2]
+        fleau0_gamer_tags = list(map(lambda p: p.gamer_tag, fleau0.squad.players))
+        fleau2_gamer_tags = list(map(lambda p: p.gamer_tag, fleau2.squad.players))
+        self.assertEqual(set(fleau0_gamer_tags), set(fleau2_gamer_tags))
+
+        # Test surbooking.
+        self.assertRaises(ValueError, self.execute, "!raid jardin 17/08 +SUperFayaChon")
+        self.execute("!raid jardin 17/08 -klaexy")
+        planning5 = self.storage.read_planning()
+        jds1 = planning0.activities[3]
+        jds2 = planning5.activities[3]
+        self.assertEqual(jds1, jds2)
+        self.assertRaises(ValueError, self.execute, "!raid jardin 17/08 +SUperFayaChon")
+        self.execute("!raid jardin 17/08 -Cosa58")
+        self.execute("!raid jardin 17/08 +SUperFayaChon")
+        planning6 = self.storage.read_planning()
+        jds3 = planning6.activities[3]
+        self.assertEqual(jds3.squad.players[5].gamer_tag, "SuperFayaChonch")
+
+        # Test underbooking.
+        self.execute("!raid flèche d'étoiles prestige 12 août -snippro34")
+        self.assertRaises(
+            ValueError,
+            self.execute,
+            "!raid flèche d'étoiles prestige 12 août -Jezebell"
+        )
+        (feedback, images) = self.execute("!raid fleche prestige +Striikers -Jezebell")
+        planning7 = self.storage.read_planning()
+        fleche2 = planning7.activities[1]
+        self.assertEqual(len(fleche2.squad.players), 1)
+        self.assertEqual(fleche2.squad.players[0].gamer_tag, "Striikers")
+        self.assertTrue(feedback.startswith("Escouade mise à jour"))
+        self.assertIsNone(images)
+
+    def test_update_substitutes(self):
+        """Verifies update substitutes intents are properly executed."""
+        # Test 1 addition.
+        planning0 = self.storage.read_planning()
+        self.execute("!raid backup fleche prestige +Walnut Waffle")
+        self.execute("!raid backup fleche prestige +Walnut Waffle")
+        planning1 = self.storage.read_planning()
+        self.assertEqual(len(planning1.activities[1].squad.substitutes), 2)
+        fleche1 = planning1.activities[1]
+        self.assertEqual(fleche1.squad.substitutes[1].gamer_tag, "Walnut Waffle")
+        self.assertEqual(fleche1.squad.substitutes[1].rating, RatedPlayer.Rating.BEGINNER)
+        self.execute("!raid backup fleche prestige -Walnut Waffle")
+        self.execute("!raid backup fleche prestige -Walnut Waffle")
+        planning2 = self.storage.read_planning()
+        self.assertEqual(planning2, planning0)
+
+        # Test additions and deletions.
+        calus0 = planning0.activities[0]
+        self.execute("!raid backup calus xxMarie -affectevil")
+        self.execute("!raid backup calus -croptus +Neofighter")
+        planning3 = self.storage.read_planning()
+        calus1 = planning3.activities[0]
+        self.assertEqual(calus1.squad.substitutes[0].gamer_tag, "xXmarie91Xx")
+        self.assertEqual(calus1.squad.substitutes[0].rating, RatedPlayer.Rating.BEGINNER)
+        self.assertEqual(calus1.squad.substitutes[1].gamer_tag, "Neofighter")
+        self.assertEqual(calus1.squad.substitutes[1].rating, RatedPlayer.Rating.BEGINNER)
+        self.execute("!raid backup calus croptus affectevil -xxmarie -Neofighter")
+        planning4 = self.storage.read_planning()
+        calus2 = planning4.activities[0]
+        calus0_gamer_tags = list(map(lambda p: p.gamer_tag, calus0.squad.substitutes))
+        calus2_gamer_tags = list(map(lambda p: p.gamer_tag, calus2.squad.substitutes))
+        self.assertEqual(set(calus0_gamer_tags), set(calus2_gamer_tags))
+
+        # Test surbooking
+        self.assertRaises(ValueError, self.execute, "!raid backup jds 25/08 +cosa +hartog +kyzerjo")
+        self.execute("!raid backup jardin 25/08 -klaexy")
+        planning5 = self.storage.read_planning()
+        jds1 = planning0.activities[3]
+        jds2 = planning5.activities[3]
+        self.assertEqual(jds1, jds2)
+        self.assertRaises(
+            ValueError,
+            self.execute,
+            "!raid backup jardin 17/08 +cosa +hartog +kyzerjo"
+        )
+        self.execute("!raid backup jardin 25/08 +live x gaming")
+        (feedback, images) = self.execute("!raid backup jardin 25/08 +babwazza")
+        planning6 = self.storage.read_planning()
+        jds3 = planning6.activities[4]
+        self.assertEqual(jds3.squad.substitutes[0].gamer_tag, "LiVe x GamIing")
+        self.assertEqual(jds3.squad.substitutes[1].gamer_tag, "BAB x WaZZa")
+        self.assertTrue(feedback.startswith("Escouade mise à jour"))
+        self.assertIsNone(images)
+
+        # Test underbooking not possible
+        self.assertEqual(len(planning6.activities[1].squad.substitutes), 1)
+        self.execute("!raid backup fleche prestige -NaughtySoft")
+        planning7 = self.storage.read_planning()
+        self.assertEqual(len(planning7.activities[1].squad.substitutes), 0)
+        self.execute("!raid backup fleche prestige -SuperFayaChonch -NaughtySoft -Cosa -Hartog")
+        planning8 = self.storage.read_planning()
+        self.assertEqual(planning8, planning7)
+
+    def test_insert(self):
+        """Verifies insert intents are properly executed."""
+        self.execute("!raid dévoreur karibnkilla")
+        (feedback, images) = self.execute("!raid couronne jeudi 19h cosa58 Walnut Waffle omegagip")
+        planning = self.storage.read_planning()
+        self.assertEqual(len(planning.activities), 7)
+        devoreur = planning.activities[-2]
+        self.assertEqual(devoreur.id.type, ActivityID.Type.EATER_OF_WORLDS)
+        self.assertEqual(devoreur.state, Activity.State.NOT_STARTED)
+        self.assertEqual(devoreur.squad.players[0].gamer_tag, "karibNkilla")
+        self.assertEqual(devoreur.squad.players[0].rating, RatedPlayer.Rating.BEGINNER)
+        couronne = planning.activities[-1]
+        self.assertEqual(couronne.id.type, ActivityID.Type.CROWN_OF_SORROW)
+        self.assertEqual(couronne.id.when.datetime, '2020-08-13T19:00:00+02:00')
+        self.assertTrue(couronne.id.when.time_specified)
+        self.assertEqual(couronne.state, Activity.State.NOT_STARTED)
+        self.assertEqual(len(couronne.squad.players), 3)
+        self.assertEqual(couronne.squad.players[2].gamer_tag, "Omega Gips")
+        self.assertEqual(couronne.squad.players[2].rating, RatedPlayer.Rating.BEGINNER)
+        self.assertTrue(feedback.startswith("Activité créée"))
+        self.assertIsNone(images)
 
 
     def execute(self, message):

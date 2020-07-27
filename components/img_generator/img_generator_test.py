@@ -9,7 +9,6 @@ from protos.activity_id_pb2 import ActivityID
 from protos.rated_player_pb2 import RatedPlayer
 
 
-# pylint: disable=too-many-statements
 class GeneratorTester(unittest.TestCase):
     """Test class for the image generator."""
 

@@ -1,4 +1,5 @@
 from pathlib import Path
+import tempfile
 import unittest
 from components.storage import storage
 from protos.activity_pb2 import Activity
@@ -7,14 +8,15 @@ from protos.api_bundle_pb2 import APIBundle
 from protos.planning_pb2 import Planning
 from protos.rated_player_pb2 import RatedPlayer
 
-class FetcherTest(unittest.TestCase):
+
+class StorageTest(unittest.TestCase):
     """Test class for the Destiny API service."""
 
     def setUp(self):
         """Set up method."""
-        sut = storage.Storage(Path('/tmp'))
-        sut.clear()
-        self.sut = sut
+        self.directory = tempfile.TemporaryDirectory().name
+        self.sut = storage.Storage(self.directory)
+        self.sut.clear()
 
     def test_no_permission(self):
         """Verifies the storage raises an IOError when encountering permission errors."""
@@ -47,7 +49,7 @@ class FetcherTest(unittest.TestCase):
         self.sut.write_api_bundle(bundle)
         bundle2 = self.sut.read_api_bundle()
         self.assertEqual(bundle, bundle2)
-        bundle3 = storage.Storage(Path('/tmp')).read_api_bundle()
+        bundle3 = storage.Storage(self.directory).read_api_bundle()
         self.assertEqual(bundle, bundle3)
         self.assertRaises(IOError, self.sut.read_planning)
 

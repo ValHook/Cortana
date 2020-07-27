@@ -7,10 +7,9 @@ package protos;
 
 message Activity {
   enum State {
-    UNKNOWN = 0;
-    NOT_STARTED = 1;
-    FINISHED = 2;
-    MILESTONED = 3;
+    NOT_STARTED = 0;
+    FINISHED = 1;
+    MILESTONED = 2;
   }
 
   ActivityID id = 1;

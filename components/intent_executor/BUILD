@@ -7,9 +7,10 @@ py_library(
     srcs = ["intent_executor.py"],
     deps = [
         "//components/api_fetcher",
+        "//components/img_generator",
         "//components/storage",
-        "//protos:api_bundle",
-        "//protos:planning",
+        requirement("dateparser"),
+        requirement("python-dateutil"),
     ],
 )
 
@@ -19,5 +20,6 @@ py_test(
     data = ["//components/intent_executor/test_assets"],
     deps = [
         ":intent_executor",
+        "//components/intent_parser",
     ],
 )

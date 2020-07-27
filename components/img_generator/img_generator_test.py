@@ -130,7 +130,7 @@ class GeneratorTester(unittest.TestCase):
                 1: "ca6edfa4febf8e08fe5d43598df552088655d160e4cca75dd1efd80b4eb88568"
             },
             "Linux": {
-                0: "5c68cd5e8b766ae3a7b5ab9935c411e638c236bcbb93d49c3b9a4dba1f25a3a9",
+                0: "f23f0dd977779129253e1925e80c2b7eec2abc6013ff8f54448b9e91b0a0c3a1",
                 1: "5f6f8181c66235040e946b7c16a7f8407cdc8d0c2b089095f5dfd3317e11f5ff"
             }
         }

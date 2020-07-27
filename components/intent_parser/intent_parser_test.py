@@ -115,6 +115,10 @@ class ParserTest(unittest.TestCase):
             "02/10": (datetime(2020, 10, 2), False),
             "25/08 21h": (datetime(2020, 8, 25, 21, 0, 0, 0, SUT_TIMEZONE), True),
             "6/1 17h45": (datetime(2021, 1, 6, 17, 45, 0, 0, SUT_TIMEZONE), True),
+            "9/8": (datetime(2020, 8, 9), False),
+            "9/8 13h": (datetime(2020, 8, 9, 13, 0, 0, 0, SUT_TIMEZONE), True),
+            "9/8/2021": (datetime(2021, 8, 9), False),
+            "9/8/2021 13h": (datetime(2021, 8, 9, 13, 0, 0, 0, SUT_TIMEZONE), True),
         }
         noises = ["", "17hShadow", "10_fooBar", "croptus", "Franstuk Walnut Oby1Chick 25/07",
                   "+Cosa58 25/07", "-SuperFayaChonch", "+emile -Omega Gips"]
@@ -223,7 +227,7 @@ class ParserTest(unittest.TestCase):
         expectation.activity_intent.activity_id.type = ActivityID.Type.SCOURGE_OF_THE_PAST
         old_date_time = datetime(2020, 8, 15)
         new_date_time = datetime(2020, 8, 15, hour=19, tzinfo=SUT_TIMEZONE)
-        expectation.activity_intent.activity_id.when. CopyFrom(to_when(old_date_time))
+        expectation.activity_intent.activity_id.when.CopyFrom(to_when(old_date_time))
         expectation.activity_intent.update_when.CopyFrom(to_when(new_date_time))
         self.assertEqual(intent, expectation)
 
@@ -232,7 +236,25 @@ class ParserTest(unittest.TestCase):
         expectation.activity_intent.activity_id.type = ActivityID.Type.EATER_OF_WORLDS
         old_date_time = datetime(2020, 8, 13, hour=21, tzinfo=SUT_TIMEZONE)
         new_date_time = datetime(2020, 8, 30, hour=14, minute=30, tzinfo=SUT_TIMEZONE)
-        expectation.activity_intent.activity_id.when. CopyFrom(to_when(old_date_time))
+        expectation.activity_intent.activity_id.when.CopyFrom(to_when(old_date_time))
+        expectation.activity_intent.update_when.CopyFrom(to_when(new_date_time))
+        self.assertEqual(intent, expectation)
+
+        intent = self.sut.parse("!raid date devoreur hier demain", SUT_BUNDLE, SUT_NOW)
+        expectation = Intent()
+        expectation.activity_intent.activity_id.type = ActivityID.Type.EATER_OF_WORLDS
+        old_date_time = datetime(2020, 8, 11)
+        new_date_time = datetime(2020, 8, 13)
+        expectation.activity_intent.activity_id.when.CopyFrom(to_when(old_date_time))
+        expectation.activity_intent.update_when.CopyFrom(to_when(new_date_time))
+        self.assertEqual(intent, expectation)
+
+        intent = self.sut.parse("!raid date devoreur hier demain 22h05", SUT_BUNDLE, SUT_NOW)
+        expectation = Intent()
+        expectation.activity_intent.activity_id.type = ActivityID.Type.EATER_OF_WORLDS
+        old_date_time = datetime(2020, 8, 11)
+        new_date_time = datetime(2020, 8, 13, hour=22, minute=5, tzinfo=SUT_TIMEZONE)
+        expectation.activity_intent.activity_id.when.CopyFrom(to_when(old_date_time))
         expectation.activity_intent.update_when.CopyFrom(to_when(new_date_time))
         self.assertEqual(intent, expectation)
 
@@ -241,7 +263,7 @@ class ParserTest(unittest.TestCase):
         expectation.activity_intent.activity_id.type = ActivityID.Type.GARDEN_OF_SALVATION
         old_date_time = datetime(2020, 8, 22)
         new_date_time = datetime(2020, 8, 23)
-        expectation.activity_intent.activity_id.when. CopyFrom(to_when(old_date_time))
+        expectation.activity_intent.activity_id.when.CopyFrom(to_when(old_date_time))
         expectation.activity_intent.update_when.CopyFrom(to_when(new_date_time))
         self.assertEqual(intent, expectation)
 
@@ -250,7 +272,7 @@ class ParserTest(unittest.TestCase):
         expectation.activity_intent.activity_id.type = ActivityID.Type.LAST_WISH
         old_date_time = datetime(2020, 8, 20, hour=16, minute=45, tzinfo=SUT_TIMEZONE)
         new_date_time = datetime(2020, 8, 19)
-        expectation.activity_intent.activity_id.when. CopyFrom(to_when(old_date_time))
+        expectation.activity_intent.activity_id.when.CopyFrom(to_when(old_date_time))
         expectation.activity_intent.update_when.CopyFrom(to_when(new_date_time))
         self.assertEqual(intent, expectation)
 
@@ -263,7 +285,34 @@ class ParserTest(unittest.TestCase):
         expectation.activity_intent.activity_id.type = ActivityID.Type.LAST_WISH
         old_date_time = datetime(2020, 8, 20, hour=16, minute=45, tzinfo=SUT_TIMEZONE)
         new_date_time = datetime(2020, 8, 19, hour=21, minute=30, tzinfo=SUT_TIMEZONE)
-        expectation.activity_intent.activity_id.when. CopyFrom(to_when(old_date_time))
+        expectation.activity_intent.activity_id.when.CopyFrom(to_when(old_date_time))
+        expectation.activity_intent.update_when.CopyFrom(to_when(new_date_time))
+        self.assertEqual(intent, expectation)
+
+        intent = self.sut.parse("!raid date dernier voeu vendredi vendredi", SUT_BUNDLE, SUT_NOW)
+        expectation = Intent()
+        expectation.activity_intent.activity_id.type = ActivityID.Type.LAST_WISH
+        old_date_time = datetime(2020, 8, 14)
+        new_date_time = datetime(2020, 8, 14)
+        expectation.activity_intent.activity_id.when.CopyFrom(to_when(old_date_time))
+        expectation.activity_intent.update_when.CopyFrom(to_when(new_date_time))
+        self.assertEqual(intent, expectation)
+
+        intent = self.sut.parse("!raid date dernier voeu 20/8 20/8 16h", SUT_BUNDLE, SUT_NOW)
+        expectation = Intent()
+        expectation.activity_intent.activity_id.type = ActivityID.Type.LAST_WISH
+        old_date_time = datetime(2020, 8, 20)
+        new_date_time = datetime(2020, 8, 20, hour=16, minute=0, tzinfo=SUT_TIMEZONE)
+        expectation.activity_intent.activity_id.when.CopyFrom(to_when(old_date_time))
+        expectation.activity_intent.update_when.CopyFrom(to_when(new_date_time))
+        self.assertEqual(intent, expectation)
+
+        intent = self.sut.parse("!raid date calus 9/8 9/8 23h", SUT_BUNDLE, SUT_NOW)
+        expectation = Intent()
+        expectation.activity_intent.activity_id.type = ActivityID.Type.LEVIATHAN
+        old_date_time = datetime(2020, 8, 9)
+        new_date_time = datetime(2020, 8, 9, hour=23, minute=0, tzinfo=SUT_TIMEZONE)
+        expectation.activity_intent.activity_id.when.CopyFrom(to_when(old_date_time))
         expectation.activity_intent.update_when.CopyFrom(to_when(new_date_time))
         self.assertEqual(intent, expectation)
 
@@ -279,7 +328,7 @@ class ParserTest(unittest.TestCase):
         expectation = Intent()
         expectation.activity_intent.activity_id.type = ActivityID.Type.CROWN_OF_SORROW
         date_time = datetime(2020, 8, 31, hour=21, minute=45, tzinfo=SUT_TIMEZONE)
-        expectation.activity_intent.activity_id.when. CopyFrom(to_when(date_time))
+        expectation.activity_intent.activity_id.when.CopyFrom(to_when(date_time))
         expectation.activity_intent.set_milestone = "Reporté"
         self.assertEqual(intent, expectation)
 
@@ -291,7 +340,7 @@ class ParserTest(unittest.TestCase):
         expectation = Intent()
         expectation.activity_intent.activity_id.type = ActivityID.Type.LAST_WISH
         date_time = datetime(2020, 8, 13)
-        expectation.activity_intent.activity_id.when. CopyFrom(to_when(date_time))
+        expectation.activity_intent.activity_id.when.CopyFrom(to_when(date_time))
         expectation.activity_intent.set_milestone = "Save étape 2"
         self.assertEqual(intent, expectation)
 
@@ -307,7 +356,7 @@ class ParserTest(unittest.TestCase):
         expectation = Intent()
         expectation.activity_intent.activity_id.type = ActivityID.Type.SPIRE_OF_STARS
         date_time = datetime(2020, 9, 5, hour=18, tzinfo=SUT_TIMEZONE)
-        expectation.activity_intent.activity_id.when. CopyFrom(to_when(date_time))
+        expectation.activity_intent.activity_id.when.CopyFrom(to_when(date_time))
         expectation.activity_intent.mark_finished = True
         self.assertEqual(intent, expectation)
 
@@ -323,7 +372,7 @@ class ParserTest(unittest.TestCase):
         expectation = Intent()
         expectation.activity_intent.activity_id.type = ActivityID.Type.SCOURGE_OF_THE_PAST
         date_time = datetime(2020, 9, 12, hour=21, minute=30, tzinfo=SUT_TIMEZONE)
-        expectation.activity_intent.activity_id.when. CopyFrom(to_when(date_time))
+        expectation.activity_intent.activity_id.when.CopyFrom(to_when(date_time))
         expectation.activity_intent.remove = True
         self.assertEqual(intent, expectation)
 
@@ -365,7 +414,7 @@ class ParserTest(unittest.TestCase):
         expectation = Intent()
         expectation.activity_intent.activity_id.type = ActivityID.Type.SCOURGE_OF_THE_PAST
         date_time = datetime(2020, 8, 13, hour=19, tzinfo=SUT_TIMEZONE)
-        expectation.activity_intent.activity_id.when. CopyFrom(to_when(date_time))
+        expectation.activity_intent.activity_id.when.CopyFrom(to_when(date_time))
         player = RatedPlayer()
         player.gamer_tag = "Oby1Chick"
         player.rating = RatedPlayer.Rating.BEGINNER
@@ -383,7 +432,7 @@ class ParserTest(unittest.TestCase):
         expectation = Intent()
         expectation.activity_intent.activity_id.type = ActivityID.Type.CROWN_OF_SORROW
         date_time = datetime(2020, 8, 15)
-        expectation.activity_intent.activity_id.when. CopyFrom(to_when(date_time))
+        expectation.activity_intent.activity_id.when.CopyFrom(to_when(date_time))
         player = RatedPlayer()
         player.gamer_tag = "snippro34"
         player.rating = RatedPlayer.Rating.INTERMEDIATE
@@ -407,7 +456,7 @@ class ParserTest(unittest.TestCase):
         expectation = Intent()
         expectation.activity_intent.activity_id.type = ActivityID.Type.LAST_WISH
         date_time = datetime(2020, 8, 16, hour=14, minute=45, tzinfo=SUT_TIMEZONE)
-        expectation.activity_intent.activity_id.when. CopyFrom(to_when(date_time))
+        expectation.activity_intent.activity_id.when.CopyFrom(to_when(date_time))
         player = RatedPlayer()
         player.gamer_tag = "affectevil"
         player.rating = RatedPlayer.Rating.BEGINNER
@@ -467,7 +516,7 @@ class ParserTest(unittest.TestCase):
         expectation = Intent()
         expectation.activity_intent.activity_id.type = ActivityID.Type.LEVIATHAN_PRESTIGE
         date_time = datetime(2020, 8, 13, hour=19, tzinfo=SUT_TIMEZONE)
-        expectation.activity_intent.activity_id.when. CopyFrom(to_when(date_time))
+        expectation.activity_intent.activity_id.when.CopyFrom(to_when(date_time))
         player = RatedPlayer()
         player.gamer_tag = "Oby1Chick"
         player.rating = RatedPlayer.Rating.BEGINNER
@@ -485,7 +534,7 @@ class ParserTest(unittest.TestCase):
         expectation = Intent()
         expectation.activity_intent.activity_id.type = ActivityID.Type.SPIRE_OF_STARS_PRESTIGE
         date_time = datetime(2020, 8, 30)
-        expectation.activity_intent.activity_id.when. CopyFrom(to_when(date_time))
+        expectation.activity_intent.activity_id.when.CopyFrom(to_when(date_time))
         player = RatedPlayer()
         player.gamer_tag = "snippro34"
         player.rating = RatedPlayer.Rating.BEGINNER
@@ -512,7 +561,7 @@ class ParserTest(unittest.TestCase):
         expectation = Intent()
         expectation.activity_intent.activity_id.type = ActivityID.Type.EATER_OF_WORLDS
         date_time = datetime(2020, 8, 16, hour=20, minute=45, tzinfo=SUT_TIMEZONE)
-        expectation.activity_intent.activity_id.when. CopyFrom(to_when(date_time))
+        expectation.activity_intent.activity_id.when.CopyFrom(to_when(date_time))
         player = RatedPlayer()
         player.gamer_tag = "SuperFayaChonch"
         player.rating = RatedPlayer.Rating.INTERMEDIATE
@@ -536,7 +585,7 @@ class ParserTest(unittest.TestCase):
         expectation = Intent()
         expectation.activity_intent.activity_id.type = ActivityID.Type.LEVIATHAN_PRESTIGE
         date_time = datetime(2020, 8, 15, hour=21, minute=30, tzinfo=SUT_TIMEZONE)
-        expectation.activity_intent.activity_id.when. CopyFrom(to_when(date_time))
+        expectation.activity_intent.activity_id.when.CopyFrom(to_when(date_time))
         player = RatedPlayer()
         player.gamer_tag = "affectevil"
         player.rating = RatedPlayer.Rating.BEGINNER

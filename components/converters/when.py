@@ -9,7 +9,7 @@ def to_when(date_time):
     """
     try:
         when = When()
-        if date_time.hour != 0 and date_time.minute != 0:
+        if date_time.hour != 0 or date_time.minute != 0:
             when.time_specified = True
             when.datetime = date_time.isoformat()
         else:

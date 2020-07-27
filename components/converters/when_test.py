@@ -9,6 +9,8 @@ DATETIME1 = datetime(2020, 8, 12, 18, 15, 0, 0, TIMEZONE)
 DATETIME1_STR = '2020-08-12T18:15:00+02:00'
 DATETIME2 = datetime(2021, 1, 10, tzinfo=TIMEZONE)
 DATETIME2_STR = '2021-01-10'
+DATETIME3 = datetime(2020, 7, 5, 12, 0, 0, 0, TIMEZONE)
+DATETIME3_STR = '2020-07-05T12:00:00+02:00'
 
 
 class WhenConverterTest(unittest.TestCase):
@@ -28,6 +30,12 @@ class WhenConverterTest(unittest.TestCase):
         expectation.time_specified = False
         self.assertEqual(when, expectation)
 
+        when = to_when(DATETIME3)
+        expectation = When()
+        expectation.datetime = DATETIME3_STR
+        expectation.time_specified = True
+        self.assertEqual(when, expectation)
+
         when = to_when(None)
         expectation = None
         self.assertEqual(when, expectation)
@@ -43,6 +51,11 @@ class WhenConverterTest(unittest.TestCase):
         when.datetime = DATETIME2_STR
         when.time_specified = False
         self.assertEqual(to_datetime(when, TIMEZONE), DATETIME2)
+
+        when = When()
+        when.datetime = DATETIME3_STR
+        when.time_specified = False
+        self.assertEqual(to_datetime(when, TIMEZONE), DATETIME3)
 
         self.assertEqual(to_datetime(None, TIMEZONE), None)
 

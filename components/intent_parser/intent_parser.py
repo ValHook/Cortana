@@ -1,4 +1,4 @@
-from datetime import datetime
+from datetime import datetime, timedelta
 from datetime import tzinfo
 import re
 import unidecode
@@ -378,25 +378,26 @@ class Parser:
             # Dateparser is not very good at parsing times when the minutes are not specified.
             # Transform strings like 18h to 18h00.
             query = re.sub(r"(.*)([0-9]h)$", r"\g<1>\g<2>00", query)
-            try:
-                parsed_datetime = dateparser.parse(
-                    query,
-                    locales=[self.__locale],
-                    settings={'PREFER_DATES_FROM': 'future', 'RELATIVE_BASE': now}
-                )
-            except:
-                # Dateparser can't deal with the case where the timezone is only present in either
-                # the parsed query or the relative base.
-                parsed_datetime = dateparser.parse(
-                    query,
-                    locales=[self.__locale],
-                    settings={
-                        'PREFER_DATES_FROM': 'future',
-                        'RELATIVE_BASE': now.replace(tzinfo=None)
-                    }
-                )
+            # Dateparser generally fails (as expected) to parse strings that contain 2 dates.
+            # Except for the edge case where said 2 dates do not contain any number.
+            # e.g aujourd'hui demain, or demain hier.
+            if popped_words >= 2 and not re.search(r"[0-9]", query):
+                break
+
+            parsed_datetime = self.run_dateparser(query, now)
+            if parsed_datetime and (now + timedelta(days=300)).date() < parsed_datetime.date():
+                # Result is weirdly too far in the future. (> 10 months)
+                # That might happen if the input is for a date in the past.
+                # Dateparser is configured to prefer dates from the future so it chose the input's
+                # date from next year.
+                # Confirm that the 'far in the future' date is intended.
+                now_last_year = now.replace(year=now.year-1)
+                parsed_datetime2 = self.run_dateparser(query, now_last_year)
+                if parsed_datetime2:
+                    parsed_datetime = parsed_datetime2
             if parsed_datetime is None:
                 continue
+
             # Dateparser wrongly adds implicit times to strings like "aujourd'hui" and "demain"
             # Filter them out.
             if not re.search(r"[0-9]h", query):
@@ -422,6 +423,31 @@ class Parser:
             with_time,
             unused_words_for_best_datetime_so_far
         )
+
+    def run_dateparser(self, query, now):
+        """
+        Executes a dateparser query as is.
+        :param query: The dateparser query. e.g mardi 19h00
+        :param now: The relative base.
+        :return: The dateparser result as is. A datetime or None.
+        """
+        try:
+            return dateparser.parse(
+                query,
+                locales=[self.__locale],
+                settings={'PREFER_DATES_FROM': 'future', 'RELATIVE_BASE': now}
+            )
+        except:
+            # Dateparser can't deal with the case where the timezone is only present in either
+            # the parsed query or the relative base.
+            return dateparser.parse(
+                query,
+                locales=[self.__locale],
+                settings={
+                    'PREFER_DATES_FROM': 'future',
+                    'RELATIVE_BASE': now.replace(tzinfo=None)
+                }
+            )
 
     def parse_gamer_tag(self, initial_words, api_bundle):
         """

@@ -13,6 +13,10 @@ from protos.planning_pb2 import Planning
 CLEARPAST_WEEKDAY = "Tuesday"
 CLEARPAST_HOUR = 19
 TIMEZONE = tz.gettz('Europe/Paris')
+MAX_SQUAD_SIZE_PLAYERS = 6
+MIN_SQUAD_SIZE_PLAYERS = 1
+MAX_SQUAD_SIZE_SUBSTITUTES = 2
+MIN_SQUAD_SIZE_SUBSTITUTES = 0
 
 
 class Executor:
@@ -126,15 +130,50 @@ class Executor:
             self.__storage.write_planning(planning)
             return "Activité supprimée" + str(activity.id)
 
+        if activity_intent.HasField('upsert_squad'):
+            # !raid (backup) [activity] (date) [players]
+            feedback = "Escouade mise à jour"
+            try:
+                activity = self.find_activity_with_id(activity_id, planning)
+            except:
+                activity = planning.activities.add()
+                activity.id.CopyFrom(activity_intent.activity_id)
+                activity.state = Activity.State.NOT_STARTED
+                feedback = "Activité créée"
+            self.merge_players(
+                activity.squad.players,
+                activity_intent.upsert_squad.added.players,
+                False
+            )
+            self.merge_players(
+                activity.squad.players,
+                activity_intent.upsert_squad.removed.players,
+                True
+            )
+            self.merge_players(
+                activity.squad.substitutes,
+                activity_intent.upsert_squad.added.substitutes,
+                False
+            )
+            self.merge_players(
+                activity.squad.substitutes,
+                activity_intent.upsert_squad.removed.substitutes,
+                True
+            )
+            self.assert_player_count_within_bound(
+                activity.squad.players,
+                MIN_SQUAD_SIZE_PLAYERS,
+                MAX_SQUAD_SIZE_PLAYERS
+            )
+            self.assert_player_count_within_bound(
+                activity.squad.substitutes,
+                MIN_SQUAD_SIZE_SUBSTITUTES,
+                MAX_SQUAD_SIZE_SUBSTITUTES
+            )
+            self.__storage.write_planning(planning)
+            return feedback + ":\n" + str(activity)
+
         raise ValueError("Commande invalide")
-
-    def update_planning_activity(self, old, new):
-        """
-        :param old: The old activity to remove from the planning
-        :param new: The new activity to add in place, if not None.
-        """
-
-
 
     def find_activity_with_id(self, activity_id, planning):
         """
@@ -182,3 +221,43 @@ class Executor:
             "Impossible de déterminer l'activité désirée car il y en a plusieurs du même type" \
             "à la même date"
         )
+
+    def merge_players(self, base, delta, subtract):
+        """
+        :param base: The array of players the delta must be merged into.
+        :param delta: The players to merge into the base.
+        :param subtract: Whether the delta is positive or negative.
+        """
+        result = []
+        if subtract:
+            delta_gamer_tags = set(map(lambda p: p.gamer_tag, delta))
+            result = list(filter(lambda p: p.gamer_tag not in delta_gamer_tags, base))
+            del base[:]
+            base.extend(result)
+        else:
+            base_gamer_tags = set(map(lambda p: p.gamer_tag, base))
+            players_to_add = list(filter(lambda p: p.gamer_tag not in base_gamer_tags, delta))
+            players_to_edit = dict()
+            for player in delta:
+                if player.gamer_tag in base_gamer_tags:
+                    players_to_edit[player.gamer_tag] = player
+            for player in base:
+                if player.gamer_tag in players_to_edit:
+                    player.rating = players_to_edit[player.gamer_tag].rating
+            base.extend(players_to_add)
+
+    def assert_player_count_within_bound(self, players, min_capacity, max_capacity):
+        """
+        :param min_capacity: Minimum expected size. Inclusive.
+        :param max_capacity: Maximum expected size. Inclusive.
+        :raises: if len(players) is not within the bounds.
+        """
+        count = len(players)
+        if count < min_capacity:
+            raise ValueError(
+                "Il n'y a pas assez de joueurs %d/%d." % (count, min_capacity)
+            )
+        if count > max_capacity:
+            raise ValueError(
+                "Il y a trop de joueurs %d/%d." % (count, max_capacity)
+            )

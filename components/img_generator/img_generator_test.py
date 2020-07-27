@@ -6,6 +6,7 @@ from dateutil import tz
 from components.img_generator import img_generator
 from protos.planning_pb2 import Planning
 from protos.activity_id_pb2 import ActivityID
+from protos.activity_pb2 import Activity
 from protos.rated_player_pb2 import RatedPlayer
 
 
@@ -61,6 +62,8 @@ class GeneratorTester(unittest.TestCase):
         a.id.type = ActivityID.Type.SCOURGE_OF_THE_PAST
         a.id.when.datetime = '2020-10-25T16:30:00+01:00'
         a.id.when.time_specified = True
+        a.state = Activity.State.MILESTONED
+        a.milestone = "save au boss"
         (a.squad.players.add()).gamer_tag = "Cosa58"
         a.squad.players[-1].rating = RatedPlayer.Rating.UNKNOWN
         (a.squad.players.add()).gamer_tag = "Walnut Waffle"
@@ -81,6 +84,7 @@ class GeneratorTester(unittest.TestCase):
         a.id.type = ActivityID.Type.GARDEN_OF_SALVATION
         a.id.when.datetime = '2020-08-25T22:35:00+02:00'
         a.id.when.time_specified = True
+        a.state = Activity.State.FINISHED
         (a.squad.players.add()).gamer_tag = "Cosa58"
         a.squad.players[-1].rating = RatedPlayer.Rating.INTERMEDIATE
         (a.squad.players.add()).gamer_tag = "Walnut Waffle"
@@ -122,11 +126,11 @@ class GeneratorTester(unittest.TestCase):
 
         hash_reference = {
             "Darwin": {
-                0: "08a3ddc01650945bb2967faf3a361792d096f04b880d21ed9cc4b65b56225866",
+                0: "e6baacda29db6fe246dffceef22b79b23b3ad74fdab8a38d01d5ea16f56c1a1a",
                 1: "ca6edfa4febf8e08fe5d43598df552088655d160e4cca75dd1efd80b4eb88568"
             },
             "Linux": {
-                0: "5c68cd5e8b766ae3a7b5ab9935c411e638c236bcbb93d49c3b9a4dba1f25a3a9",
+                0: "f23f0dd977779129253e1925e80c2b7eec2abc6013ff8f54448b9e91b0a0c3a1",
                 1: "5f6f8181c66235040e946b7c16a7f8407cdc8d0c2b089095f5dfd3317e11f5ff"
             }
         }

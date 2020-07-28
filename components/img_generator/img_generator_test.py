@@ -5,7 +5,7 @@ import tempfile
 import unittest
 from dateutil import tz
 from components.img_generator import img_generator
-from protos.planning_pb2 import Planning
+from protos.schedule_pb2 import Schedule
 from protos.activity_id_pb2 import ActivityID
 from protos.activity_pb2 import Activity
 from protos.rated_player_pb2 import RatedPlayer
@@ -14,12 +14,12 @@ from protos.rated_player_pb2 import RatedPlayer
 class GeneratorTester(unittest.TestCase):
     """Test class for the image generator."""
 
-    def test_planning(self):
+    def test_schedule(self):
         """
         Verifies the hash of generated GIFs to ensure the images stay the same.
         """
-        p = Planning()
-        a = p.activities.add()
+        s = Schedule()
+        a = s.activities.add()
         a.id.type = ActivityID.Type.LEVIATHAN
         a.id.when.datetime = '2020-07-14T23:55:00+02:00'
         a.id.when.time_specified = True
@@ -40,7 +40,7 @@ class GeneratorTester(unittest.TestCase):
         a.squad.substitutes[-1].rating = RatedPlayer.Rating.BEGINNER
         (a.squad.substitutes.add()).gamer_tag = "Affectevil"
         a.squad.substitutes[-1].rating = RatedPlayer.Rating.BEGINNER
-        a = p.activities.add()
+        a = s.activities.add()
         a.id.type = ActivityID.Type.SPIRE_OF_STARS_PRESTIGE
         a.id.when.datetime = '2020-07-23'
         a.id.when.time_specified = False
@@ -61,7 +61,7 @@ class GeneratorTester(unittest.TestCase):
         a.squad.substitutes[-1].rating = RatedPlayer.Rating.BEGINNER
         (a.squad.substitutes.add()).gamer_tag = "Affectevil"
         a.squad.substitutes[-1].rating = RatedPlayer.Rating.INTERMEDIATE
-        a = p.activities.add()
+        a = s.activities.add()
         a.id.type = ActivityID.Type.SCOURGE_OF_THE_PAST
         a.id.when.datetime = '2020-10-25T16:30:00+01:00'
         a.id.when.time_specified = True
@@ -83,7 +83,7 @@ class GeneratorTester(unittest.TestCase):
         a.squad.substitutes[-1].rating = RatedPlayer.Rating.BEGINNER
         (a.squad.substitutes.add()).gamer_tag = "Affectevil"
         a.squad.substitutes[-1].rating = RatedPlayer.Rating.INTERMEDIATE
-        a = p.activities.add()
+        a = s.activities.add()
         a.id.type = ActivityID.Type.GARDEN_OF_SALVATION
         a.id.when.datetime = '2020-08-25T22:35:00+02:00'
         a.id.when.time_specified = True
@@ -104,7 +104,7 @@ class GeneratorTester(unittest.TestCase):
         a.squad.substitutes[-1].rating = RatedPlayer.Rating.EXPERIENCED
         (a.squad.substitutes.add()).gamer_tag = "Affectevil"
         a.squad.substitutes[-1].rating = RatedPlayer.Rating.BEGINNER
-        a = p.activities.add()
+        a = s.activities.add()
         a.id.type = ActivityID.Type.WRATH_OF_THE_MACHINE
         a.id.when.datetime = '2019-01-25T04:42:00+01:00'
         a.id.when.time_specified = True
@@ -125,7 +125,7 @@ class GeneratorTester(unittest.TestCase):
         a.squad.substitutes[-1].rating = RatedPlayer.Rating.BEGINNER
         (a.squad.substitutes.add()).gamer_tag = "Affectevil"
         a.squad.substitutes[-1].rating = RatedPlayer.Rating.BEGINNER
-        a = p.activities.add()
+        a = s.activities.add()
         a.id.type = ActivityID.Type.LAST_WISH
         a.state = Activity.State.NOT_STARTED
         (a.squad.players.add()).gamer_tag = "snippro34"
@@ -140,7 +140,7 @@ class GeneratorTester(unittest.TestCase):
         a.squad.substitutes[-1].rating = RatedPlayer.Rating.BEGINNER
 
         gen = img_generator.Generator(tz.gettz('Europe/Paris'), "fr")
-        gifs = gen.generate_images(p)
+        gifs = gen.generate_images(s)
 
         hash_reference = {
             "Darwin": [

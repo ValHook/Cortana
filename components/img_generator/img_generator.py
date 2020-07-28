@@ -5,7 +5,7 @@ from babel.dates import format_datetime
 from PIL import Image, ImageDraw, ImageSequence, ImageFont
 from components.converters.when import to_datetime
 from protos.activity_id_pb2 import ActivityID
-from protos.planning_pb2 import Planning
+from protos.schedule_pb2 import Schedule
 from protos.rated_player_pb2 import RatedPlayer
 from protos.activity_pb2 import Activity
 
@@ -80,7 +80,7 @@ NUM_SECTIONS = 4
 
 
 class Generator:
-    """Generates the planning in GIF format."""
+    """Generates the schedule in GIF format."""
 
     def __init__(self, date_tz, locale):
         assert isinstance(date_tz, tzinfo), "Fuseau horaire non configuré"
@@ -123,17 +123,17 @@ class Generator:
         px, py = self.move((px, py), section)
         frame.paste(fimg, (px, py, px + fimg.size[0], py + fimg.size[1]), fimg)
 
-    def write_to_frame(self, frame, banner_number, planning):
+    def write_to_frame(self, frame, banner_number, schedule):
         """
         Writes the relevant information for a given GIF frame.
         :param frame: an Image object to write to.
         :param banner_number: an int representing the GIF index.
-        :param planning: The activity planning.
+        :param schedule: The activity schedule.
         """
         draw = ImageDraw.Draw(frame)
-        max_section = min((banner_number + 1) * NUM_SECTIONS, len(planning.activities))
+        max_section = min((banner_number + 1) * NUM_SECTIONS, len(schedule.activities))
         for section in range(banner_number * NUM_SECTIONS, max_section):
-            a = planning.activities[section]
+            a = schedule.activities[section]
             name_w = CR.getsize(ACTIVITY_NAMES[a.id.type])[0]
             draw.text(
                 self.move(COORDS["activity"], section, name_w),
@@ -195,22 +195,22 @@ class Generator:
                     fill=COLORS["red"]
                 )
 
-    def generate_images(self, planning):
+    def generate_images(self, schedule):
         """
-        Generates as many images as needed to display the activity planning.
-        :param planning: The activity planning.
+        Generates as many images as needed to display the activity schedule.
+        :param schedule: The activity schedule.
         :return: an array of BytesIO streams containing the GIFs.
         """
-        assert isinstance(planning, Planning), "Planning vide"
+        assert isinstance(schedule, Schedule), "Planning vide"
         gifs = []
-        needed_banners = ((len(planning.activities) - 1) // NUM_SECTIONS) + 1
+        needed_banners = ((len(schedule.activities) - 1) // NUM_SECTIONS) + 1
         for banner_number in range(needed_banners):
             temp = io.BytesIO()
             with Image.open('components/img_generator/assets/empty_banner.gif') as im:
                 frames = []
                 for frame in ImageSequence.Iterator(im):
                     frame = frame.copy().convert('RGBA')
-                    self.write_to_frame(frame, banner_number, planning)
+                    self.write_to_frame(frame, banner_number, schedule)
                     resize_to = (frame.size[0] // 1.44, frame.size[1] // 1.44)
                     frame.thumbnail(resize_to, Image.ANTIALIAS)
                     frames.append(frame)

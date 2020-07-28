@@ -8,7 +8,7 @@ py_library(
     data = ["//components/img_generator/assets"],
     deps = [
         "//components/converters:when",
-        "//protos:planning",
+        "//protos:schedule",
         requirement("babel"),
         requirement("pillow"),
     ],

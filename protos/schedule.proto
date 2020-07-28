@@ -4,6 +4,6 @@ import "protos/activity.proto";
 
 package protos;
 
-message Planning {
+message Schedule {
   repeated Activity activities = 1;
 }

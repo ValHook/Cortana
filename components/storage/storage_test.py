@@ -5,7 +5,7 @@ from components.storage import storage
 from protos.activity_pb2 import Activity
 from protos.activity_id_pb2 import ActivityID
 from protos.api_bundle_pb2 import APIBundle
-from protos.planning_pb2 import Planning
+from protos.schedule_pb2 import Schedule
 from protos.rated_player_pb2 import RatedPlayer
 
 
@@ -55,11 +55,11 @@ class StorageTest(unittest.TestCase):
         self.assertEqual(bundle, bundle2)
         bundle3 = storage.Storage(self.directory.name).read_api_bundle()
         self.assertEqual(bundle, bundle3)
-        self.assertRaises(IOError, self.sut.read_planning)
+        self.assertRaises(IOError, self.sut.read_schedule)
 
-    def test_planning_write_then_read(self):
-        """Writes then reads a planning to/from the storage."""
-        planning = Planning()
+    def test_schedule_write_then_read(self):
+        """Writes then reads a schedule to/from the storage."""
+        schedule = Schedule()
         player1 = RatedPlayer()
         player1.gamer_tag = "Walnut Waffle"
         player1.rating = RatedPlayer.Rating.EXPERIENCED
@@ -72,16 +72,16 @@ class StorageTest(unittest.TestCase):
         activity1.id.when.datetime = '2020-9-1'
         activity1.state = Activity.State.NOT_STARTED
         activity1.squad.players.append(player1)
-        planning.activities.append(activity1)
+        schedule.activities.append(activity1)
 
         activity2 = Activity()
         activity2.id.type = ActivityID.Type.LEVIATHAN_PRESTIGE
         activity2.state = Activity.State.FINISHED
         activity2.squad.substitutes.append(player2)
-        planning.activities.append(activity2)
-        self.sut.write_planning(planning)
-        planning2 = self.sut.read_planning()
-        self.assertEqual(planning, planning2)
+        schedule.activities.append(activity2)
+        self.sut.write_schedule(schedule)
+        schedule2 = self.sut.read_schedule()
+        self.assertEqual(schedule, schedule2)
         self.assertRaises(IOError, self.sut.read_api_bundle)
 
 

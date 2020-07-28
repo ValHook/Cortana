@@ -9,7 +9,7 @@ from components.img_generator.img_generator import Generator
 from components.intent_parser.intent_parser import Parser
 from components.intent_executor.intent_executor import Executor
 from components.storage.storage import Storage
-from protos.planning_pb2 import Planning
+from protos.schedule_pb2 import Schedule
 
 ROOT_DIRECTORY = Path(user_data_dir('WalOby Bot', 'WalOby'))
 TIMEZONE = tz.gettz('Europe/Paris')
@@ -67,15 +67,15 @@ class Bot(discord.Client):
             storage.write_api_bundle(bundle)
             await self.answer_message("Synchronisation terminée", message)
 
-        # Make sure a basic planning is available.
-        planning = None
+        # Make sure a basic schedule is available.
+        schedule = None
         try:
-            planning = storage.read_planning()
+            schedule = storage.read_schedule()
         except:
             pass
-        if not planning:
-            planning = Planning()
-            storage.write_planning(planning)
+        if not schedule:
+            schedule = Schedule()
+            storage.write_schedule(schedule)
 
         # Parse intent.
         intent = self.__parser.parse(message.content, bundle, now)

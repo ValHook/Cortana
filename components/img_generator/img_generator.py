@@ -141,13 +141,16 @@ class Generator:
                 fill=COLORS["purple"]
             )
             date_time = to_datetime(a.id.when, self.__date_tz)
-            date_format = "EEEE d MMMM, à HH:mm" if a.id.when.time_specified else "EEEE d MMMM"
-            sdate = format_datetime(
-                date_time,
-                format=date_format,
-                tzinfo=self.__date_tz,
-                locale=self.__locale
-            ).capitalize()
+            if date_time:
+                date_format = "EEEE d MMMM, à HH:mm" if a.id.when.time_specified else "EEEE d MMMM"
+                sdate = format_datetime(
+                    date_time,
+                    format=date_format,
+                    tzinfo=self.__date_tz,
+                    locale=self.__locale
+                ).capitalize()
+            else:
+                sdate = ""
             detail_w = CR.getsize(sdate)[0]
             draw.text(
                 self.move(COORDS["details"], section, detail_w),
@@ -208,7 +211,10 @@ class Generator:
                 for frame in ImageSequence.Iterator(im):
                     frame = frame.copy().convert('RGBA')
                     self.write_to_frame(frame, banner_number, planning)
+                    resize_to = (frame.size[0] // 1.44, frame.size[1] // 1.44)
+                    frame.thumbnail(resize_to, Image.ANTIALIAS)
                     frames.append(frame)
                 frames[0].save(temp, save_all=True, append_images=frames[1:], format="GIF")
+                temp.seek(0)
                 gifs.append(temp)
         return gifs

@@ -13,12 +13,16 @@ You must have the following dependencies installed:
 1. python3
 2. bazel
 
-Set your bungie API key in an environment variable:
+Set your bungie API key and discord token in an environment variable:
 ```sh
 export BUNGIE_API_KEY=...
+export DISCORD_TOKEN=...
 ```
 
-TODO: Expose a buildable target for the bot once ready.
+### Run
+```sh
+bazel run //bot
+```
 
 ### Tests
 Run all the workspace tests:

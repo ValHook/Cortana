@@ -67,9 +67,8 @@ class Parser:
         :param message: The message to parse.
         :param api_bundle: The API Bundle, used to identify gamer tags and experience levels.
         :param now: Now as a datetime.
-        :return: An intent if the message is a bot intent or None if not.
-        i.e Messages starting with !raid are treated as intents. The rest are not.
-        :raises: An error if the message is an intent but ill-formed.
+        :return: An intent.
+        :raises: An error if the message cannot be translated to an intent.
         """
         assert isinstance(message, str), "Message vide"
         assert isinstance(now, datetime), "Horloge non configurée"
@@ -79,7 +78,7 @@ class Parser:
         words = re.split(r"\s+", message)
         next_word = words.pop(0)
         if next_word != '!raid':
-            return None
+            raise ValueError("La commande doit commencer par !raid")
         next_word = words.pop(0)
         if next_word == "sync":
             return self.parse_sync_intent(words)

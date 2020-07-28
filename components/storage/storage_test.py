@@ -14,9 +14,13 @@ class StorageTest(unittest.TestCase):
 
     def setUp(self):
         """Set up method."""
-        self.directory = tempfile.TemporaryDirectory().name
-        self.sut = storage.Storage(self.directory)
+        self.directory = tempfile.TemporaryDirectory()
+        self.sut = storage.Storage(self.directory.name)
         self.sut.clear()
+
+    def tearDown(self):
+        """Performs some cleanups at the end of each test."""
+        self.directory.cleanup()
 
     def test_no_permission(self):
         """Verifies the storage raises an IOError when encountering permission errors."""
@@ -49,7 +53,7 @@ class StorageTest(unittest.TestCase):
         self.sut.write_api_bundle(bundle)
         bundle2 = self.sut.read_api_bundle()
         self.assertEqual(bundle, bundle2)
-        bundle3 = storage.Storage(self.directory).read_api_bundle()
+        bundle3 = storage.Storage(self.directory.name).read_api_bundle()
         self.assertEqual(bundle, bundle3)
         self.assertRaises(IOError, self.sut.read_planning)
 

@@ -142,9 +142,16 @@ class ExecutorTest(unittest.TestCase):
         self.img_generator.generate_images = MagicMock(return_value=mocked_images)
         (feedback, images) = self.execute("!raid images")
         planning = self.storage.read_planning()
-
         self.img_generator.generate_images.assert_called_with(planning)
         self.assertEqual(feedback, "Affiches pour les activités en cours :")
+        self.assertEqual(images, mocked_images)
+
+        mocked_images = []
+        self.img_generator.generate_images = MagicMock(return_value=mocked_images)
+        (feedback, images) = self.execute("!raid images")
+        planning = self.storage.read_planning()
+        self.img_generator.generate_images.assert_called_with(planning)
+        self.assertEqual(feedback, "Il n'y a aucune activité dans le planning pour le moment.")
         self.assertEqual(images, mocked_images)
 
     def test_sync(self):
@@ -155,7 +162,7 @@ class ExecutorTest(unittest.TestCase):
         self.api_fetcher.fetch = MagicMock(return_value=new_bundle)
         (feedback, images) = self.execute("!raid sync")
 
-        self.api_fetcher.fetch.assert_called_with()
+        self.api_fetcher.fetch.assert_called_with(NOW)
         self.assertEqual(self.storage.read_api_bundle(), new_bundle)
         self.assertEqual(feedback, "Joueurs et niveaux d'experiences synchronisés.")
         self.assertIsNone(images)

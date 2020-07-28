@@ -11,3 +11,4 @@ disable=
     R0914, # too-many-locals
     R0915, # too-many-statements
     W0702, # bare-except
+    W0703, # broad-except

@@ -57,11 +57,13 @@ class Executor:
             # !raid images
             planning = self.__storage.read_planning()
             images = self.__img_generator.generate_images(planning)
+            if len(images) == 0:
+                return "Il n'y a aucune activité dans le planning pour le moment.", []
             return "Affiches pour les activités en cours :", images
 
         if global_intent.HasField('sync_bundle'):
             # !raid sync
-            bundle = self.__api_fetcher.fetch()
+            bundle = self.__api_fetcher.fetch(now)
             self.__storage.write_api_bundle(bundle)
             return "Joueurs et niveaux d'experiences synchronisés.", None
 
@@ -128,7 +130,7 @@ class Executor:
             activity = self.find_activity_with_id(activity_id, planning)
             planning.activities.remove(activity)
             self.__storage.write_planning(planning)
-            return "Activité supprimée" + str(activity.id)
+            return "Activité supprimée :\n" + str(activity.id)
 
         if activity_intent.HasField('upsert_squad'):
             # !raid (backup) [activity] (date) [players]
@@ -171,7 +173,7 @@ class Executor:
                 MAX_SQUAD_SIZE_SUBSTITUTES
             )
             self.__storage.write_planning(planning)
-            return feedback + ":\n" + str(activity)
+            return feedback + " :\n" + str(activity)
 
         raise ValueError("Commande invalide")
 
@@ -219,7 +221,7 @@ class Executor:
             return activities[0]
         raise ValueError(
             "Impossible de déterminer l'activité désirée car il y en a plusieurs du même type" \
-            "à la même date"
+            "à la même date."
         )
 
     def merge_players(self, base, delta, subtract):

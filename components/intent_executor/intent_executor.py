@@ -152,7 +152,8 @@ class Executor:
 
         if global_intent.HasField('info_all'):
             # !raid infoall
-            return str(self.__storage.read_schedule()), None
+            schedule = self.__storage.read_schedule()
+            return str(schedule) if len(schedule.activities) else "Le planning est vierge.", None
 
         raise ValueError("Commande invalide")
 

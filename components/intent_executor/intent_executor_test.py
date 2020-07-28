@@ -209,6 +209,11 @@ class ExecutorTest(unittest.TestCase):
         self.assertIsNone(images)
         self.assertEqual(feedback, str(schedule))
 
+        self.execute("!raid clearall")
+        (feedback, images) = self.execute("!raid infoall")
+        self.assertIsNone(images)
+        self.assertEqual(feedback, "Le planning est vierge.")
+
     def test_info(self):
         """Verifies info intents are properly executed."""
         schedule = self.storage.read_schedule()

@@ -148,8 +148,8 @@ class GeneratorTester(unittest.TestCase):
                 "941aa1047be76e8e98ecfe7dff9ad6bd2083e5b2ca1c6d913bd3fd634a0b9e8d"
             ],
             "Linux": [
-                "f23f0dd977779129253e1925e80c2b7eec2abc6013ff8f54448b9e91b0a0c3a1",
-                "5f6f8181c66235040e946b7c16a7f8407cdc8d0c2b089095f5dfd3317e11f5ff"
+                "0d4939f0a14a4e8ce0982f93eaaa2f37b244cf3a2354fa3fe351d84874b07c1f",
+                "5713ac4a16f7701ca7eba86fd8063899cc95753412edbd5a19b96a14b0b2b64e"
             ]
         }
 

@@ -143,7 +143,7 @@ class ExecutorTest(unittest.TestCase):
         (feedback, images) = self.execute("!raid images")
         planning = self.storage.read_planning()
         self.img_generator.generate_images.assert_called_with(planning)
-        self.assertEqual(feedback, "Affiches pour les activités en cours :")
+        self.assertEqual(feedback, "Affiches pour les activités en cours:")
         self.assertEqual(images, mocked_images)
 
         mocked_images = []
@@ -170,7 +170,15 @@ class ExecutorTest(unittest.TestCase):
     def test_lastsync(self):
         """Verifies lastsync intents are properly executed."""
         (feedback, images) = self.execute("!raid lastsync")
-        self.assertEqual(feedback, "Dernière synchronisation : 2020-07-26T16:05:00+02:00")
+        self.assertEqual(feedback, "Dernière synchronisation: 2020-07-26T16:05:00+02:00")
+        self.assertIsNone(images)
+
+    def test_clearall(self):
+        """Verifies clearall intents are properly executed."""
+        (feedback, images) = self.execute("!raid clearall")
+        expectation = Planning()
+        self.assertEqual(self.storage.read_planning(), expectation)
+        self.assertEqual(feedback, "Toutes les activités du planning sont désormais supprimées.")
         self.assertIsNone(images)
 
     def test_clearpast(self):
@@ -188,13 +196,13 @@ class ExecutorTest(unittest.TestCase):
         self.assertIsNone(images)
         self.assertEqual(self.storage.read_planning(), expectation)
 
-    def test_remove(self):
-        """Verifies remove intents are properly executed."""
+    def test_clear(self):
+        """Verifies clear intents are properly executed."""
         planning = self.storage.read_planning()
-        self.execute("!raid remove calus")
-        self.assertRaises(ValueError, self.execute, "!raid remove jds")
-        (feedback, images) = self.execute("!raid remove jds 17/08")
-        self.assertRaises(ValueError, self.execute, "!raid remove jds 17/08")
+        self.execute("!raid clear calus")
+        self.assertRaises(ValueError, self.execute, "!raid clear jds")
+        (feedback, images) = self.execute("!raid clear jds 17/08")
+        self.assertRaises(ValueError, self.execute, "!raid clear jds 17/08")
         planning.activities.pop(3)
         planning.activities.pop(0)
 
@@ -214,7 +222,7 @@ class ExecutorTest(unittest.TestCase):
         planning.activities[1].milestone = "Save étape 2"
         planning.activities[2].state = Activity.State.MILESTONED
         planning.activities[2].milestone = "Save au deuxième boss"
-        self.assertTrue(feedback.startswith("Milestone mise à jour"))
+        self.assertTrue(feedback.startswith("Étape mise à jour"))
         self.assertIsNone(images)
         self.assertEqual(self.storage.read_planning(), planning)
 
@@ -226,7 +234,7 @@ class ExecutorTest(unittest.TestCase):
         self.assertRaises(ValueError, self.execute, "!raid milestone couronne save au boss")
         planning.activities[3].state = Activity.State.FINISHED
         planning.activities[4].state = Activity.State.FINISHED
-        self.assertTrue(feedback.startswith("Good job!\nActivité marquée comme terminée :\n"))
+        self.assertTrue(feedback.startswith("Good job!\nActivité marquée comme terminée:\n"))
         self.assertIsNone(images)
         self.assertEqual(self.storage.read_planning(), planning)
 
@@ -249,7 +257,7 @@ class ExecutorTest(unittest.TestCase):
         planning.activities[3].id.when.time_specified = False
         planning.activities[4].id.when.datetime = '2021-08-24'
         planning.activities[4].id.when.time_specified = False
-        self.assertTrue(feedback.startswith("Date mise à jour :\n"))
+        self.assertTrue(feedback.startswith("Date mise à jour:\n"))
         self.assertIsNone(images)
         updated_planning = self.storage.read_planning()
         self.assertEqual(updated_planning, planning)
@@ -401,7 +409,6 @@ class ExecutorTest(unittest.TestCase):
         self.assertEqual(couronne.squad.players[2].rating, RatedPlayer.Rating.BEGINNER)
         self.assertTrue(feedback.startswith("Activité créée"))
         self.assertIsNone(images)
-
 
     def execute(self, message):
         """

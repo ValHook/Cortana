@@ -1,11 +1,11 @@
 from pathlib import Path
 import shutil
 from protos.api_bundle_pb2 import APIBundle
-from protos.planning_pb2 import Planning
+from protos.schedule_pb2 import Schedule
 
 STORAGE_DIRECTORY = Path('destiny-bot')
 API_BUNDLE_FILE = Path('api_bundle.dat')
-PLANNING_FILE = Path('planning.dat')
+PLANNING_FILE = Path('schedule.dat')
 
 class Storage:
     """Parser for user input (intents)."""
@@ -53,30 +53,30 @@ class Storage:
         except:
             raise IOError("Impossible d'écrire l'API Bundle dans le stockage.")
 
-    def read_planning(self):
+    def read_schedule(self):
         """
-        Reads the planning that is saved to the storage.
-        :return: The read planning.
+        Reads the schedule that is saved to the storage.
+        :return: The read schedule.
         """
         try:
             filepath = self.__root_path.joinpath(PLANNING_FILE)
             data = filepath.read_bytes()
-            bundle = Planning()
+            bundle = Schedule()
             bundle.ParseFromString(data)
         except:
             raise IOError("Impossible de lire le planning du stockage.")
         return bundle
 
-    def write_planning(self, planning):
+    def write_schedule(self, schedule):
         """
-        Writes the given planning to the storage.
-        :param planning: The planning to write.
+        Writes the given schedule to the storage.
+        :param schedule: The schedule to write.
         """
-        if not isinstance(planning, Planning):
+        if not isinstance(schedule, Schedule):
             raise ValueError("Le planning à écrire est invalide.")
         try:
             filepath = self.__root_path.joinpath(PLANNING_FILE)
-            data = planning.SerializeToString()
+            data = schedule.SerializeToString()
             filepath.write_bytes(data)
         except:
             raise IOError("Impossible d'écrire le planning dans le stockage.")

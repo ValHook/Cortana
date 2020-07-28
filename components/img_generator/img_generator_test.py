@@ -5,7 +5,7 @@ import tempfile
 import unittest
 from dateutil import tz
 from components.img_generator import img_generator
-from protos.planning_pb2 import Planning
+from protos.schedule_pb2 import Schedule
 from protos.activity_id_pb2 import ActivityID
 from protos.activity_pb2 import Activity
 from protos.rated_player_pb2 import RatedPlayer
@@ -14,11 +14,11 @@ from protos.rated_player_pb2 import RatedPlayer
 class GeneratorTester(unittest.TestCase):
     """Test class for the image generator."""
 
-    def test_planning(self):
+    def test_schedule(self):
         """
         Verifies the hash of generated GIFs to ensure the images stay the same.
         """
-        p = Planning()
+        p = Schedule()
         a = p.activities.add()
         a.id.type = ActivityID.Type.LEVIATHAN
         a.id.when.datetime = '2020-07-14T23:55:00+02:00'

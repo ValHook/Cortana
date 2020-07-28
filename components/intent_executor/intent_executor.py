@@ -8,7 +8,7 @@ from components.img_generator.img_generator import Generator
 from components.storage.storage import Storage
 from protos.activity_pb2 import Activity
 from protos.intent_pb2 import Intent
-from protos.planning_pb2 import Planning
+from protos.schedule_pb2 import Schedule
 
 CLEARPAST_WEEKDAY = "Tuesday"
 CLEARPAST_HOUR = 19
@@ -106,8 +106,8 @@ class Executor:
 
         if global_intent.HasField('generate_images'):
             # !raid images
-            planning = self.__storage.read_planning()
-            images = self.__img_generator.generate_images(planning)
+            schedule = self.__storage.read_schedule()
+            images = self.__img_generator.generate_images(schedule)
             if len(images) == 0:
                 return "Il n'y a aucune activité dans le planning pour le moment.", []
             return "Affiches pour les activités en cours:", images
@@ -125,13 +125,13 @@ class Executor:
 
         if global_intent.HasField('clear_all'):
             # !raid clearall
-            planning = Planning()
-            self.__storage.write_planning(planning)
+            schedule = Schedule()
+            self.__storage.write_schedule(schedule)
             return "Toutes les activités du planning sont désormais supprimées.", None
 
         if global_intent.HasField('clear_past'):
             # !raid clearpast
-            planning = self.__storage.read_planning()
+            schedule = self.__storage.read_schedule()
             threshold = dateparser.parse(
                 CLEARPAST_WEEKDAY,
                 settings={'PREFER_DATES_FROM': 'past', 'RELATIVE_BASE': now}
@@ -140,19 +140,19 @@ class Executor:
             threshold = threshold.replace(tzinfo=TIMEZONE)
             activities = filter(
                 lambda a: not a.id.when or threshold <= to_datetime(a.id.when, now.tzinfo),
-                planning.activities
+                schedule.activities
             )
-            planning = Planning()
-            planning.activities.extend(activities)
-            self.__storage.write_planning(planning)
+            schedule = Schedule()
+            schedule.activities.extend(activities)
+            self.__storage.write_schedule(schedule)
             feedback = "Les activités des semaines précédentes ont été suprimées.\n"
             feedback += "Les activités restantes dans le planning sont:\n"
-            feedback += str(planning)
+            feedback += str(schedule)
             return feedback, None
 
         if global_intent.HasField('info_all'):
             # !raid infoall
-            return str(self.__storage.read_planning()), None
+            return str(self.__storage.read_schedule()), None
 
         raise ValueError("Commande invalide")
 
@@ -162,49 +162,49 @@ class Executor:
         :return: An execution feedback message tuple.
         :raises: If the intent could be executed for some reason.
         """
-        planning = self.__storage.read_planning()
+        schedule = self.__storage.read_schedule()
         activity_id = activity_intent.activity_id
         if activity_intent.HasField('update_when'):
             # !raid date
-            activity = self.find_activity_with_id(activity_id, planning)
+            activity = self.find_activity_with_id(activity_id, schedule)
             activity.id.when.CopyFrom(activity_intent.update_when)
-            self.__storage.write_planning(planning)
+            self.__storage.write_schedule(schedule)
             return "Date mise à jour:\n" + str(activity.id)
 
         if activity_intent.HasField('mark_finished'):
             # !raid finish [activity] (date)
-            activity = self.find_activity_with_id(activity_id, planning)
+            activity = self.find_activity_with_id(activity_id, schedule)
             activity.state = Activity.State.FINISHED
-            self.__storage.write_planning(planning)
+            self.__storage.write_schedule(schedule)
             return "Good job!\nActivité marquée comme terminée:\n" + str(activity.id)
 
         if activity_intent.HasField('set_milestone'):
             # !raid milestone [activity] (date)
-            activity = self.find_activity_with_id(activity_id, planning)
+            activity = self.find_activity_with_id(activity_id, schedule)
             activity.state = Activity.State.MILESTONED
             activity.milestone = activity_intent.set_milestone
-            self.__storage.write_planning(planning)
+            self.__storage.write_schedule(schedule)
             return "Étape mise à jour (" + activity.milestone + "):\n" + str(activity.id)
 
         if activity_intent.HasField('info'):
             # !raid info
-            activity = self.find_activity_with_id(activity_id, planning)
+            activity = self.find_activity_with_id(activity_id, schedule)
             return str(activity)
 
         if activity_intent.HasField('clear'):
             # !raid clear [activity] (date)
-            activity = self.find_activity_with_id(activity_id, planning)
-            planning.activities.remove(activity)
-            self.__storage.write_planning(planning)
+            activity = self.find_activity_with_id(activity_id, schedule)
+            schedule.activities.remove(activity)
+            self.__storage.write_schedule(schedule)
             return "Activité supprimée:\n" + str(activity.id)
 
         if activity_intent.HasField('upsert_squad'):
             # !raid (backup) [activity] (date) [players]
             feedback = "Escouade mise à jour"
             try:
-                activity = self.find_activity_with_id(activity_id, planning)
+                activity = self.find_activity_with_id(activity_id, schedule)
             except:
-                activity = planning.activities.add()
+                activity = schedule.activities.add()
                 activity.id.CopyFrom(activity_intent.activity_id)
                 activity.state = Activity.State.NOT_STARTED
                 feedback = "Activité créée"
@@ -238,21 +238,21 @@ class Executor:
                 MIN_SQUAD_SIZE_SUBSTITUTES,
                 MAX_SQUAD_SIZE_SUBSTITUTES
             )
-            self.__storage.write_planning(planning)
+            self.__storage.write_schedule(schedule)
             return feedback + ":\n" + str(activity)
 
         raise ValueError("Commande invalide")
 
-    def find_activity_with_id(self, activity_id, planning):
+    def find_activity_with_id(self, activity_id, schedule):
         """
         Finds the activity that best matches the given ID.
         :param activity_id: The activity ID used for the search.
         It can be incomplete (i.e without the When)
-        :param planning: The planning to search from.
+        :param schedule: The planning to search from.
         :return: The desired match.
         :raises: If there are 0 or more than 1 matches.
         """
-        activities = planning.activities
+        activities = schedule.activities
         activity_type = activity_id.type
         date_time = to_datetime(activity_id.when, TIMEZONE)
         date = date_time.date() if date_time else None
@@ -262,7 +262,7 @@ class Executor:
 
         # Search by type.
         if search_by_type:
-            activities = filter(lambda a: a.id.type == activity_type, planning.activities)
+            activities = filter(lambda a: a.id.type == activity_type, schedule.activities)
 
         # Search by date.
         elif search_by_date and date:

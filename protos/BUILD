@@ -24,8 +24,8 @@ py_proto_library(
 )
 
 py_proto_library(
-    name = "planning",
-    srcs = ["planning.proto"],
+    name = "schedule",
+    srcs = ["schedule.proto"],
     deps = [
         ":activity",
     ],

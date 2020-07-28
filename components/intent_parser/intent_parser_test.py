@@ -178,6 +178,13 @@ class ParserTest(unittest.TestCase):
             noise_array = list(filter(len, re.split(r"\s+", noise)))
             self.assertRaises(ValueError, self.sut.parse_gamer_tag, noise_array, SUT_BUNDLE)
 
+    def test_parse_help_intent(self):
+        """Verifies help intents can properly be parsed."""
+        intent = self.sut.parse("!raid help", SUT_BUNDLE, SUT_NOW)
+        expectation = Intent()
+        expectation.global_intent.help = True
+        self.assertEqual(intent, expectation)
+
     def test_parse_clearall_intent(self):
         """Verifies clear all intents can properly be parsed."""
         intent = self.sut.parse("!raid clearall", SUT_BUNDLE, SUT_NOW)

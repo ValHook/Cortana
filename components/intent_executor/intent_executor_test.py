@@ -136,6 +136,12 @@ class ExecutorTest(unittest.TestCase):
         """Performs some cleanups at the end of each test."""
         self.storage_directory.cleanup()
 
+    def test_help(self):
+        """Verifies help intents are properly executed."""
+        (feedback, images) = self.execute("!raid help")
+        self.assertTrue(feedback.startswith("Guide d'utilisation:"))
+        self.assertIsNone(images)
+
     def test_generate_images(self):
         """Verifies image generation intents are properly executed."""
         mocked_images = [io.BytesIO(), io.BytesIO()]

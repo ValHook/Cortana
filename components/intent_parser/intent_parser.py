@@ -80,6 +80,8 @@ class Parser:
         if next_word != '!raid':
             raise ValueError("La commande doit commencer par !raid")
         next_word = words.pop(0)
+        if next_word == "help":
+            return self.parse_help_intent(words)
         if next_word == "sync":
             return self.parse_sync_intent(words)
         if next_word == "lastsync":
@@ -101,6 +103,17 @@ class Parser:
         if next_word == "backup":
             return self.parse_upsert_squad_intent(words, True, api_bundle, now)
         return self.parse_upsert_squad_intent([next_word] + words, False, api_bundle, now)
+
+    def parse_help_intent(self, initial_words):
+        """
+        :param initial_words: The words after !raid help.
+        :return: A help intent.
+        :raises: If the words are not empty.
+        """
+        self.assert_words_empty(initial_words)
+        intent = Intent()
+        intent.global_intent.help = True
+        return intent
 
     def parse_clearall_intent(self, initial_words):
         """

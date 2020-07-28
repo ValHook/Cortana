@@ -185,6 +185,13 @@ class ParserTest(unittest.TestCase):
         expectation.global_intent.help = True
         self.assertEqual(intent, expectation)
 
+    def test_parse_infoall_intent(self):
+        """Verifies infoall intents can properly be parsed."""
+        intent = self.sut.parse("!raid infoall", SUT_BUNDLE, SUT_NOW)
+        expectation = Intent()
+        expectation.global_intent.info_all = True
+        self.assertEqual(intent, expectation)
+
     def test_parse_clearall_intent(self):
         """Verifies clear all intents can properly be parsed."""
         intent = self.sut.parse("!raid clearall", SUT_BUNDLE, SUT_NOW)
@@ -372,6 +379,14 @@ class ParserTest(unittest.TestCase):
         date_time = datetime(2020, 9, 5, hour=18, tzinfo=SUT_TIMEZONE)
         expectation.activity_intent.activity_id.when.CopyFrom(to_when(date_time))
         expectation.activity_intent.mark_finished = True
+        self.assertEqual(intent, expectation)
+
+    def test_parse_info_intent(self):
+        """Verifies info intents can properly be parsed."""
+        intent = self.sut.parse("!raid info dernier voeu", SUT_BUNDLE, SUT_NOW)
+        expectation = Intent()
+        expectation.activity_intent.activity_id.type = ActivityID.Type.LAST_WISH
+        expectation.activity_intent.info = True
         self.assertEqual(intent, expectation)
 
     def test_parse_clear_intent(self):

@@ -102,7 +102,6 @@ class Executor:
                 "Utile quand des nouveaux membres rejoignent le clan. " \
                 "Utile pour mettre à jour les confirmés, débutants etc...\n\n" \
                 "!raid lastsync => Affiche la dernière date de synchronisation."
-            print(len(help_str))
             return help_str, None
 
         if global_intent.HasField('generate_images'):
@@ -151,6 +150,10 @@ class Executor:
             feedback += str(planning)
             return feedback, None
 
+        if global_intent.HasField('info_all'):
+            # !raid infoall
+            return str(self.__storage.read_planning()), None
+
         raise ValueError("Commande invalide")
 
     def execute_activity_intent(self, activity_intent):
@@ -182,6 +185,11 @@ class Executor:
             activity.milestone = activity_intent.set_milestone
             self.__storage.write_planning(planning)
             return "Étape mise à jour (" + activity.milestone + "):\n" + str(activity.id)
+
+        if activity_intent.HasField('info'):
+            # !raid info
+            activity = self.find_activity_with_id(activity_id, planning)
+            return str(activity)
 
         if activity_intent.HasField('clear'):
             # !raid clear [activity] (date)

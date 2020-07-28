@@ -80,26 +80,31 @@ class Parser:
         if next_word != '!raid':
             raise ValueError("La commande doit commencer par !raid")
         next_word = words.pop(0)
+
         if next_word == "help":
             return self.parse_help_intent(words)
+        if next_word == "infoall":
+            return self.parse_infoall_intent(words)
         if next_word == "sync":
             return self.parse_sync_intent(words)
         if next_word == "lastsync":
             return self.parse_lastsync_intent(words)
         if next_word == "images":
             return self.parse_images_intent(words)
+        if next_word == "clearpast":
+            return self.parse_clearpast_intent(words)
+        if next_word == "clearall":
+            return self.parse_clearall_intent(words)
         if next_word == "date":
             return self.parse_update_datetime_intent(words, now)
         if next_word == "milestone":
             return self.parse_update_milestone_intent(words, now)
         if next_word == "finish":
             return self.parse_finish_intent(words, now)
+        if next_word == "info":
+            return self.parse_info_intent(words, now)
         if next_word == "clear":
             return self.parse_clear_intent(words, now)
-        if next_word == "clearpast":
-            return self.parse_clearpast_intent(words)
-        if next_word == "clearall":
-            return self.parse_clearall_intent(words)
         if next_word == "backup":
             return self.parse_upsert_squad_intent(words, True, api_bundle, now)
         return self.parse_upsert_squad_intent([next_word] + words, False, api_bundle, now)
@@ -113,6 +118,17 @@ class Parser:
         self.assert_words_empty(initial_words)
         intent = Intent()
         intent.global_intent.help = True
+        return intent
+
+    def parse_infoall_intent(self, initial_words):
+        """
+        :param initial_words: The words after !raid infoall.
+        :return: A help intent.
+        :raises: If the words are not empty.
+        """
+        self.assert_words_empty(initial_words)
+        intent = Intent()
+        intent.global_intent.info_all = True
         return intent
 
     def parse_clearall_intent(self, initial_words):
@@ -242,6 +258,30 @@ class Parser:
             activity_intent.activity_id.when.CopyFrom(when)
         self.assert_words_empty(words)
         activity_intent.mark_finished = True
+        intent = Intent()
+        intent.activity_intent.CopyFrom(activity_intent)
+        return intent
+
+    def parse_info_intent(self, initial_words, now):
+        """
+        :param initial_words: The words after !raid info.
+        :param now: Now as a datetime.
+        :return: An activity removal intent.
+        :raises: If the words are not in the format [activity_type] (datetime).
+        """
+        (activity_type, words) = self.parse_activity_type(initial_words)
+        date_time = None
+        try:
+            (date_time, _, words) = self.parse_datetime(words, now)
+        except:
+            pass
+        activity_intent = ActivityIntent()
+        activity_intent.activity_id.type = activity_type
+        when = to_when(date_time)
+        if when:
+            activity_intent.activity_id.when.CopyFrom(when)
+        self.assert_words_empty(words)
+        activity_intent.info = True
         intent = Intent()
         intent.activity_intent.CopyFrom(activity_intent)
         return intent

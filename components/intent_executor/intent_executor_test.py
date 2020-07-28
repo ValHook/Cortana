@@ -222,7 +222,7 @@ class ExecutorTest(unittest.TestCase):
         planning.activities[1].milestone = "Save étape 2"
         planning.activities[2].state = Activity.State.MILESTONED
         planning.activities[2].milestone = "Save au deuxième boss"
-        self.assertTrue(feedback.startswith("Milestone mise à jour"))
+        self.assertTrue(feedback.startswith("Étape mise à jour"))
         self.assertIsNone(images)
         self.assertEqual(self.storage.read_planning(), planning)
 

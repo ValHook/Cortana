@@ -129,7 +129,7 @@ class Executor:
             activity.state = Activity.State.MILESTONED
             activity.milestone = activity_intent.set_milestone
             self.__storage.write_planning(planning)
-            return "Milestone mise à jour (" + activity.milestone + "):\n" + str(activity.id)
+            return "Étape mise à jour (" + activity.milestone + "):\n" + str(activity.id)
 
         if activity_intent.HasField('clear'):
             # !raid clear [activity] (date)

@@ -99,7 +99,16 @@ class Bot(discord.Client):
     async def answer_message(self, answer, message):
         """print() + message.channel.send()"""
         print(answer)
-        await message.channel.send("```" + answer + "```")
+        # Messages need to be posted in chunks, each smaller than 2000 bytes.
+        answer_split = answer.splitlines()
+        answers = ['']
+        for a in answer_split:
+            if len(answers[-1]) + len(a) < 1990:
+                answers[-1] = answers[-1] + "\n" + a
+            else:
+                answers.append(a)
+        for a in answers:
+            await message.channel.send("```" + a + "```")
 
 
 if __name__ == "__main__":

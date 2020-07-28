@@ -13,6 +13,7 @@ message GlobalIntent {
     bool get_last_bundle_sync_datetime =3;
     bool clear_past = 4;
     bool clear_all = 5;
+    bool help = 7;
   }
 }
 message ActivityIntent {

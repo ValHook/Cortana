@@ -59,7 +59,7 @@ class Executor:
             images = self.__img_generator.generate_images(planning)
             if len(images) == 0:
                 return "Il n'y a aucune activité dans le planning pour le moment.", []
-            return "Affiches pour les activités en cours :", images
+            return "Affiches pour les activités en cours:", images
 
         if global_intent.HasField('sync_bundle'):
             # !raid sync
@@ -70,9 +70,15 @@ class Executor:
         if global_intent.HasField('get_last_bundle_sync_datetime'):
             # !raid lastsync
             bundle = self.__storage.read_api_bundle()
-            return "Dernière synchronisation : " + bundle.last_sync_datetime, None
+            return "Dernière synchronisation: " + bundle.last_sync_datetime, None
 
-        if global_intent.HasField('clear_all_activities_from_past_weeks'):
+        if global_intent.HasField('clear_all'):
+            # !raid clearall
+            planning = Planning()
+            self.__storage.write_planning(planning)
+            return "Toutes les activités du planning sont désormais supprimées.", None
+
+        if global_intent.HasField('clear_past'):
             # !raid clearpast
             planning = self.__storage.read_planning()
             threshold = dateparser.parse(
@@ -89,7 +95,7 @@ class Executor:
             planning.activities.extend(activities)
             self.__storage.write_planning(planning)
             feedback = "Les activités des semaines précédentes ont été suprimées.\n"
-            feedback += "Les activités restantes dans le planning sont :\n"
+            feedback += "Les activités restantes dans le planning sont:\n"
             feedback += str(planning)
             return feedback, None
 
@@ -108,14 +114,14 @@ class Executor:
             activity = self.find_activity_with_id(activity_id, planning)
             activity.id.when.CopyFrom(activity_intent.update_when)
             self.__storage.write_planning(planning)
-            return "Date mise à jour :\n" + str(activity.id)
+            return "Date mise à jour:\n" + str(activity.id)
 
         if activity_intent.HasField('mark_finished'):
             # !raid finish [activity] (date)
             activity = self.find_activity_with_id(activity_id, planning)
             activity.state = Activity.State.FINISHED
             self.__storage.write_planning(planning)
-            return "Good job!\nActivité marquée comme terminée :\n" + str(activity.id)
+            return "Good job!\nActivité marquée comme terminée:\n" + str(activity.id)
 
         if activity_intent.HasField('set_milestone'):
             # !raid milestone [activity] (date)
@@ -123,14 +129,14 @@ class Executor:
             activity.state = Activity.State.MILESTONED
             activity.milestone = activity_intent.set_milestone
             self.__storage.write_planning(planning)
-            return "Milestone mise à jour (" + activity.milestone + ") :\n" + str(activity.id)
+            return "Milestone mise à jour (" + activity.milestone + "):\n" + str(activity.id)
 
-        if activity_intent.HasField('remove'):
-            # !raid remove [activity] (date)
+        if activity_intent.HasField('clear'):
+            # !raid clear [activity] (date)
             activity = self.find_activity_with_id(activity_id, planning)
             planning.activities.remove(activity)
             self.__storage.write_planning(planning)
-            return "Activité supprimée :\n" + str(activity.id)
+            return "Activité supprimée:\n" + str(activity.id)
 
         if activity_intent.HasField('upsert_squad'):
             # !raid (backup) [activity] (date) [players]
@@ -173,7 +179,7 @@ class Executor:
                 MAX_SQUAD_SIZE_SUBSTITUTES
             )
             self.__storage.write_planning(planning)
-            return feedback + " :\n" + str(activity)
+            return feedback + ":\n" + str(activity)
 
         raise ValueError("Commande invalide")
 
@@ -216,13 +222,10 @@ class Executor:
 
         activities = list(activities)
         if len(activities) == 0:
-            raise ValueError("Aucune activité trouvée pour :\n" + str(activity_id))
+            raise ValueError("Aucune activité trouvée pour:\n" + str(activity_id))
         if len(activities) == 1:
             return activities[0]
-        raise ValueError(
-            "Impossible de déterminer l'activité désirée car il y en a plusieurs du même type" \
-            "à la même date."
-        )
+        raise ValueError("Critère de recherche trop large. Précisez une date et une heure.")
 
     def merge_players(self, base, delta, subtract):
         """

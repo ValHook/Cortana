@@ -11,7 +11,8 @@ message GlobalIntent {
     bool generate_images = 1;
     bool sync_bundle = 2;
     bool get_last_bundle_sync_datetime =3;
-    bool clear_all_activities_from_past_weeks = 4;
+    bool clear_past = 4;
+    bool clear_all = 5;
   }
 }
 message ActivityIntent {
@@ -25,7 +26,7 @@ message ActivityIntent {
     When update_when = 3;
     bool mark_finished = 4;
     string set_milestone = 5;
-    bool remove = 6;
+    bool clear = 6;
   }
 }
 

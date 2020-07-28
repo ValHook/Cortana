@@ -92,13 +92,26 @@ class Parser:
             return self.parse_update_milestone_intent(words, now)
         if next_word == "finish":
             return self.parse_finish_intent(words, now)
-        if next_word == "remove":
-            return self.parse_remove_intent(words, now)
+        if next_word == "clear":
+            return self.parse_clear_intent(words, now)
         if next_word == "clearpast":
             return self.parse_clearpast_intent(words)
+        if next_word == "clearall":
+            return self.parse_clearall_intent(words)
         if next_word == "backup":
             return self.parse_upsert_squad_intent(words, True, api_bundle, now)
         return self.parse_upsert_squad_intent([next_word] + words, False, api_bundle, now)
+
+    def parse_clearall_intent(self, initial_words):
+        """
+        :param initial_words: The words after !raid clearall.
+        :return: A clear all intent.
+        :raises: If the words are not empty.
+        """
+        self.assert_words_empty(initial_words)
+        intent = Intent()
+        intent.global_intent.clear_all = True
+        return intent
 
     def parse_clearpast_intent(self, initial_words):
         """
@@ -108,7 +121,7 @@ class Parser:
         """
         self.assert_words_empty(initial_words)
         intent = Intent()
-        intent.global_intent.clear_all_activities_from_past_weeks = True
+        intent.global_intent.clear_past = True
         return intent
 
     def parse_sync_intent(self, initial_words):
@@ -220,12 +233,12 @@ class Parser:
         intent.activity_intent.CopyFrom(activity_intent)
         return intent
 
-    def parse_remove_intent(self, initial_words, now):
+    def parse_clear_intent(self, initial_words, now):
         """
-        :param initial_words: The words after !raid remove.
+        :param initial_words: The words after !raid clear.
         :param now: Now as a datetime.
         :return: An activity removal intent.
-        :raises: If the worgit ds are not in the format [activity_type] (datetime).
+        :raises: If the words are not in the format [activity_type] (datetime).
         """
         (activity_type, words) = self.parse_activity_type(initial_words)
         date_time = None
@@ -239,7 +252,7 @@ class Parser:
         if when:
             activity_intent.activity_id.when.CopyFrom(when)
         self.assert_words_empty(words)
-        activity_intent.remove = True
+        activity_intent.clear = True
         intent = Intent()
         intent.activity_intent.CopyFrom(activity_intent)
         return intent

@@ -178,11 +178,18 @@ class ParserTest(unittest.TestCase):
             noise_array = list(filter(len, re.split(r"\s+", noise)))
             self.assertRaises(ValueError, self.sut.parse_gamer_tag, noise_array, SUT_BUNDLE)
 
+    def test_parse_clearall_intent(self):
+        """Verifies clear all intents can properly be parsed."""
+        intent = self.sut.parse("!raid clearall", SUT_BUNDLE, SUT_NOW)
+        expectation = Intent()
+        expectation.global_intent.clear_all = True
+        self.assertEqual(intent, expectation)
+
     def test_parse_clearpast_intent(self):
         """Verifies clear past intents can properly be parsed."""
         intent = self.sut.parse("!raid clearpast", SUT_BUNDLE, SUT_NOW)
         expectation = Intent()
-        expectation.global_intent.clear_all_activities_from_past_weeks = True
+        expectation.global_intent.clear_past = True
         self.assertEqual(intent, expectation)
 
     def test_parse_sync_intent(self):
@@ -360,20 +367,20 @@ class ParserTest(unittest.TestCase):
         expectation.activity_intent.mark_finished = True
         self.assertEqual(intent, expectation)
 
-    def test_parse_remove_intent(self):
-        """Verifies remove intents can properly be parsed."""
-        intent = self.sut.parse("!raid remove couronne", SUT_BUNDLE, SUT_NOW)
+    def test_parse_clear_intent(self):
+        """Verifies clear intents can properly be parsed."""
+        intent = self.sut.parse("!raid clear couronne", SUT_BUNDLE, SUT_NOW)
         expectation = Intent()
         expectation.activity_intent.activity_id.type = ActivityID.Type.CROWN_OF_SORROW
-        expectation.activity_intent.remove = True
+        expectation.activity_intent.clear = True
         self.assertEqual(intent, expectation)
 
-        intent = self.sut.parse("!raid remove fleau 12/9 21h30", SUT_BUNDLE, SUT_NOW)
+        intent = self.sut.parse("!raid clear fleau 12/9 21h30", SUT_BUNDLE, SUT_NOW)
         expectation = Intent()
         expectation.activity_intent.activity_id.type = ActivityID.Type.SCOURGE_OF_THE_PAST
         date_time = datetime(2020, 9, 12, hour=21, minute=30, tzinfo=SUT_TIMEZONE)
         expectation.activity_intent.activity_id.when.CopyFrom(to_when(date_time))
-        expectation.activity_intent.remove = True
+        expectation.activity_intent.clear = True
         self.assertEqual(intent, expectation)
 
     def test_parse_create_squad_intent(self):

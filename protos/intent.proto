@@ -14,6 +14,7 @@ message GlobalIntent {
     bool clear_past = 4;
     bool clear_all = 5;
     bool help = 7;
+    bool info_all= 8;
   }
 }
 message ActivityIntent {
@@ -28,6 +29,7 @@ message ActivityIntent {
     bool mark_finished = 4;
     string set_milestone = 5;
     bool clear = 6;
+    bool info = 7;
   }
 }
 

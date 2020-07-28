@@ -202,6 +202,20 @@ class ExecutorTest(unittest.TestCase):
         self.assertIsNone(images)
         self.assertEqual(self.storage.read_planning(), expectation)
 
+    def test_infoall(self):
+        """Verifies infoall intents are properly executed."""
+        planning = self.storage.read_planning()
+        (feedback, images) = self.execute("!raid infoall")
+        self.assertIsNone(images)
+        self.assertEqual(feedback, str(planning))
+
+    def test_info(self):
+        """Verifies info intents are properly executed."""
+        planning = self.storage.read_planning()
+        (feedback, images) = self.execute("!raid info calus")
+        self.assertIsNone(images)
+        self.assertEqual(feedback, str(planning.activities[0]))
+
     def test_clear(self):
         """Verifies clear intents are properly executed."""
         planning = self.storage.read_planning()

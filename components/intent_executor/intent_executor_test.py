@@ -24,8 +24,8 @@ API_KEY = os.environ.get('BUNGIE_API_KEY', '')
 
 def make_schedule():
     """Constructs a schedule for test cases."""
-    p = Schedule()
-    a = p.activities.add()
+    s = Schedule()
+    a = s.activities.add()
     a.state = Activity.State.FINISHED
     a.id.type = ActivityID.Type.LEVIATHAN
     a.id.when.datetime = '2020-08-09T21:15:00+02:00'
@@ -47,7 +47,7 @@ def make_schedule():
     (a.squad.substitutes.add()).gamer_tag = "affectevil"
     a.squad.substitutes[-1].rating = RatedPlayer.Rating.BEGINNER
 
-    a = p.activities.add()
+    a = s.activities.add()
     a.state = Activity.State.NOT_STARTED
     a.id.type = ActivityID.Type.SPIRE_OF_STARS_PRESTIGE
     a.id.when.datetime = '2020-08-12'
@@ -59,7 +59,7 @@ def make_schedule():
     (a.squad.substitutes.add()).gamer_tag = "NaughtySoft"
     a.squad.substitutes[-1].rating = RatedPlayer.Rating.INTERMEDIATE
 
-    a = p.activities.add()
+    a = s.activities.add()
     a.state = Activity.State.MILESTONED
     a.milestone = "Save au boss"
     a.id.type = ActivityID.Type.SCOURGE_OF_THE_PAST
@@ -78,7 +78,7 @@ def make_schedule():
     (a.squad.players.add()).gamer_tag = "croptus"
     a.squad.players[-1].rating = RatedPlayer.Rating.BEGINNER
 
-    a = p.activities.add()
+    a = s.activities.add()
     a.state = Activity.State.NOT_STARTED
     a.id.type = ActivityID.Type.GARDEN_OF_SALVATION
     a.id.when.datetime = '2020-08-17T21:15:00+02:00'
@@ -100,7 +100,7 @@ def make_schedule():
     (a.squad.substitutes.add()).gamer_tag = "affectevil"
     a.squad.substitutes[-1].rating = RatedPlayer.Rating.BEGINNER
 
-    a = p.activities.add()
+    a = s.activities.add()
     a.state = Activity.State.NOT_STARTED
     a.id.type = ActivityID.Type.GARDEN_OF_SALVATION
     a.id.when.datetime = '2020-08-25'
@@ -109,7 +109,7 @@ def make_schedule():
     a.squad.players[-1].rating = RatedPlayer.Rating.BEGINNER
     (a.squad.players.add()).gamer_tag = "Walnut Waffle"
     a.squad.players[-1].rating = RatedPlayer.Rating.BEGINNER
-    return p
+    return s
 
 
 class ExecutorTest(unittest.TestCase):

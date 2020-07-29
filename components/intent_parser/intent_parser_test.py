@@ -178,6 +178,13 @@ class ParserTest(unittest.TestCase):
             noise_array = list(filter(len, re.split(r"\s+", noise)))
             self.assertRaises(ValueError, self.sut.parse_gamer_tag, noise_array, SUT_BUNDLE)
 
+    def test_parse_credits_intent(self):
+        """Verifies credits intents can properly be parsed."""
+        intent = self.sut.parse("!raid credits", SUT_BUNDLE, SUT_NOW)
+        expectation = Intent()
+        expectation.global_intent.credits = True
+        self.assertEqual(intent, expectation)
+
     def test_parse_help_intent(self):
         """Verifies help intents can properly be parsed."""
         intent = self.sut.parse("!raid help", SUT_BUNDLE, SUT_NOW)

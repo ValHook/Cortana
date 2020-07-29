@@ -14,7 +14,8 @@ message GlobalIntent {
     bool clear_past = 4;
     bool clear_all = 5;
     bool help = 7;
-    bool info_all= 8;
+    bool info_all = 8;
+    bool credits = 9;
   }
 }
 message ActivityIntent {

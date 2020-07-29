@@ -81,6 +81,8 @@ class Parser:
             raise ValueError("La commande doit commencer par !raid")
         next_word = words.pop(0)
 
+        if next_word == "credits":
+            return self.parse_credits_intent(words)
         if next_word == "help":
             return self.parse_help_intent(words)
         if next_word == "infoall":
@@ -108,6 +110,17 @@ class Parser:
         if next_word == "backup":
             return self.parse_upsert_squad_intent(words, True, api_bundle, now)
         return self.parse_upsert_squad_intent([next_word] + words, False, api_bundle, now)
+
+    def parse_credits_intent(self, initial_words):
+        """
+        :param initial_words: The words after !raid credits.
+        :return: A credits intent.
+        :raises: If the words are not empty.
+        """
+        self.assert_words_empty(initial_words)
+        intent = Intent()
+        intent.global_intent.credits = True
+        return intent
 
     def parse_help_intent(self, initial_words):
         """

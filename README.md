@@ -51,9 +51,14 @@ Liste des commandes:
 
 !raid clearall => Supprime toutes les activités.
 
-!raid sync => Synchronise la liste des joueurs et leurs stats. Utile quand des nouveaux membres rejoignent le clan. Utile pour mettre à jour les confirmés, débutants etc...
+!raid sync => Synchronise la liste des joueurs et leurs stats.
+Utile quand des nouveaux membres rejoignent le clan.
+Utile pour que le bot soit au courant des changements de niveau d'expérience des joueurs.
+Attention toutefois, les changements de niveau d'expérience ne sont pas directement reflétés dans les affiches. Ils seront appliqués à partir des prochaines commandes (nouvelle création d'activité ou mise à jour d'escouade).
 
 !raid lastsync => Affiche la dernière date de synchronisation.
+
+!raid credits => Affiche les noms de mes créateurs.
 ```
 
 ### Build

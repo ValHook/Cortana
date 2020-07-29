@@ -58,15 +58,13 @@ class Bot(discord.Client):
 
         # Init storage for current guild.
         now = datetime.now(TIMEZONE)
-        storage = Storage(ROOT_DIRECTORY.joinpath(message.guild.name))
+        storage = Storage(ROOT_DIRECTORY.joinpath(str(message.guild.id)))
 
         # Make sure a basic bundle is available.
         bundle = None
         try:
             bundle = storage.read_api_bundle()
         except:
-            pass
-        if not bundle:
             await self.answer_message(
                 "Une synchronisation des joueurs doit être effectuée.\nVeuillez patienter...",
                 message
@@ -76,14 +74,10 @@ class Bot(discord.Client):
             await self.answer_message("Synchronisation terminée", message)
 
         # Make sure a basic schedule is available.
-        schedule = None
         try:
-            schedule = storage.read_schedule()
+            storage.read_schedule()
         except:
-            pass
-        if not schedule:
-            schedule = Schedule()
-            storage.write_schedule(schedule)
+            storage.write_schedule(Schedule())
 
         # Parse intent.
         intent = self.__parser.parse(message.content, bundle, now)

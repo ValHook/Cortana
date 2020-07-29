@@ -15,7 +15,7 @@ Dans toutes les commandes détaillées ci-dessous il faut savoir que:
 
 -[nom activité] doit être remplacé par un vrai nom, style calus, fleche, fleau, jds, couronne, etc... Plusieurs formats sont supportés (e.g. leviathan, jardin du salut, couronne du malheur, flèche prestige, flèche d'étoiles prestige marchent aussi). Les fautes d'orthographe sont aussi gérées dans la limite du raisonnable. (e.g. kalus, fleo, devorer, etc... sont aussi supportés).
 
-- (date) peut être remplacé par une date ou ignorée. Plusieurs formats de date sont gérés (e.g. mercredi, 17/08, dimanche 21h, demain 22h30, 20/8 20h30, etc...)
+- (date) indique une date optionnelle. Plusieurs formats de date sont gérés (e.g. mercredi, 17/08, dimanche 21h, demain 22h30, 20/8 20h30, etc...)
 La date est utile pour 2 cas de figures:
 1) Afficher la date sur les affiches.
 2) Différencier deux activités du même type dans une commande.

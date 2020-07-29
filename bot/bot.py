@@ -11,11 +11,11 @@ from components.intent_executor.intent_executor import Executor
 from components.storage.storage import Storage
 from protos.schedule_pb2 import Schedule
 
-BUNGIE_API_KEY = os.environ.get('BUNGIE_API_KEY', '')
-DISCORD_TOKEN = os.environ.get('DISCORD_TOKEN', '')
+CORTANA_BUNGIE_API_KEY = os.environ.get('CORTANA_BUNGIE_API_KEY', '')
+CORTANA_DISCORD_TOKEN = os.environ.get('CORTANA_DISCORD_TOKEN', '')
 ROOT_DIRECTORY = Path(user_data_dir('cortana-destiny-discord', 'WalOby')) \
-    .joinpath(DISCORD_TOKEN) \
-    .joinpath(BUNGIE_API_KEY)
+    .joinpath(CORTANA_DISCORD_TOKEN) \
+    .joinpath(CORTANA_BUNGIE_API_KEY)
 TIMEZONE = tz.gettz('Europe/Paris')
 LOCALE = 'fr'
 
@@ -26,7 +26,7 @@ class Bot(discord.Client):
     def __init__(self):
         super().__init__()
         self.__generator = Generator(TIMEZONE, LOCALE)
-        self.__fetcher = Fetcher(BUNGIE_API_KEY)
+        self.__fetcher = Fetcher(CORTANA_BUNGIE_API_KEY)
         self.__parser = Parser(LOCALE)
         self.has_been_ready_once = False
 
@@ -49,7 +49,7 @@ class Bot(discord.Client):
 
     async def handle_message(self, message):
         """Real message handler."""
-        if message.author == self.user or not message.content.startswith("!raid "):
+        if message.author == self.user or not message.content.startswith("!cortana "):
             return
         print()
         print(message.guild.name)
@@ -114,11 +114,11 @@ class Bot(discord.Client):
 
 
 if __name__ == "__main__":
-    if not DISCORD_TOKEN:
-        raise ValueError("DISCORD_TOKEN non configuré.")
-    if not BUNGIE_API_KEY:
-        raise ValueError("BUNGIE_API_KEY non configurée.")
+    if not CORTANA_DISCORD_TOKEN:
+        raise ValueError("CORTANA_DISCORD_TOKEN non configuré.")
+    if not CORTANA_BUNGIE_API_KEY:
+        raise ValueError("CORTANA_BUNGIE_API_KEY non configurée.")
     print("Démarrage du bot...")
     print(f"Dossier de stoackge racine: {ROOT_DIRECTORY}")
     bot = Bot()
-    bot.run(DISCORD_TOKEN)
+    bot.run(CORTANA_DISCORD_TOKEN)

@@ -104,8 +104,8 @@ class Executor:
                 "!raid clearall => Supprime toutes les activités.\n\n" \
                 "!raid sync => Synchronise la liste des joueurs et leurs stats.\n" \
                 "Utile quand des nouveaux membres rejoignent le clan.\n" \
-                "Utile pour que le bot soit au courant des changements de niveau d'expérience " \
-                "des joueurs.\nAttention toutefois, les changements de niveau d'expérience ne " \
+                "Utile pour que le bot soit au courant des changements de niveaux d'expérience " \
+                "des joueurs.\nAttention toutefois, les changements de niveaux d'expérience ne " \
                 "sont pas directement reflétés dans les affiches. " \
                 "Ils seront appliqués à partir des prochaines commandes (nouvelle création " \
                 "d'activité ou mise à jour d'escouade).\n\n" \

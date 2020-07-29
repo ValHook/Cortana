@@ -1,18 +1,12 @@
 dist: xenial
 language: python
-python: "3.7"
-
-# Build every push to master and every pull request.
+python: '3.7'
 branches:
   only:
   - master
-
-# Setup env variables.
 env:
   global:
-    secure: IJhFgglkLjLtFYig+8dfIq7MMRGuQV9cYE040dFDYrTVfSMJKbpAV2DQj1cN2CYNuvQGL55nNeYeCTE8g2TCooZNe1gBHJ9l3D6zaY75v2UVEl1ST8n1O+PTZRSN3FYmA2qmUUW+GV/aFxHmOwri7OuXotx35Mxex+Hx2ebJ1Wfa1s7JaXriGU6GmpDT7vr9tJcrUCd4m7xH3u/cXXTjv9d6lvos3eNAxCHmN0m7b/geeVG+WXiFLTabEZSD6Q8cf1Yo7rrllVPi5WByK8B6ILdATZnbXLh5K0NHsBnkipOvqT99aAZSDCyXojhJwAjVjKqF/9SqOXXhVAJV0e6vUk1ku4eopLJtD3QdCpn3F/n0Zw/Sfjj7K7Rb3jrV9yDJ5nqbuX12aKkgqthGsnSJjSkWskzZLI6ghGOs4CBF/KNXO0ZEaiPejxlVLUEuXY3sA8jKi8WS8PvH5wkSkRDUutjZ8aynXHRCffKZzN0uleqTd/ffnO3T6/5YmcJ4uFm8bh8BJlKL4T6KR587BP2eE/oPfOZahFLPHg+byc8WUO7nmkgepc7WJKQktb/oaFy9lD5Mf6ShHpgtpAvxOlT0MjdiCayIrhiF93nmyAqRokO0GinVWCQ3/z1mowv2GSnWwVpPp7KxRnVpSDXZAtnbdb9Qn+ckrqlCz/jXuJGFjbE=
-
-# Install Bazel.
+    secure: N2znTSyEsm8ksfdkCb5KeSmrCyuI6ol7T+xLkTG0SQKcUSXH5ohH8NFmZVPe/d/3AYICKuWz8aCuKimNGPpBmNa4acZuyrqsD+WQw3DQLwBMaOLbws2rYb7Kig37L56SUKqVDN55toYoAnZOAxI3+j17SfkE0l1IDUD9W1xejtG1UyDFJj4rXAr9tVJqQOCkzfhpCl6o3MI5JRwwaD7CRKm2NxthgB9eCMPEhuCInoM3/mei7U4Om09apZj2fJBmAE/6qdan3BHyT7uGJwOL5bk3baGHUAUaDiM5I9EqI1t2dX63caObX4T8vz0akEkQQ2yeOhL99bCl7HwTDWRRr52nk0Gy9j62o3T+1rW5chmt+1jNLCeB9pZUFxsedIXfb5YRcVpN8xOSI35r7g/a1tVlhL1NncobaBk9JbRJE527qVTROjM1hXZNCk9l67lvSWZdm/Yi5iTuuManMAHReYnHOE3Q+yfEL4UhyEAVEs2q9VZOOv3Hmh5Hda6iNo2JYly+JXyqUH4OYa95upAcDXddAGhmhNyTa2LzB9Nci0z3lvMdjAzpxAQ7d0duGyTZangiMntNIrIoxpR5SPbn5pupcXeHt8svLOXW3QNl3Q0ToIeOOeoVt5vqvI5uEMJjd/fnNXGRpDrF/dGnOkYb2JPS4aQtGuHW7GjBM2mzz3g=
 addons:
   apt:
     sources:
@@ -23,12 +17,8 @@ addons:
 before_install:
 - wget https://github.com/bazelbuild/bazel/releases/download/3.3.1/bazel_3.3.1-linux-x86_64.deb
 - sudo dpkg -i bazel_3.3.1-linux-x86_64.deb
-
-# Run tests.
 script:
 - test $TRAVIS_EVENT_TYPE = "push" && test $TRAVIS_BRANCH = "master" || ./check_lint.sh
 - test $TRAVIS_EVENT_TYPE = "push" && test $TRAVIS_BRANCH = "master" || ./check_tests.sh
-
-# Deploy iff the cause of this build is a push to master (after a pull request got merged).
 after_success:
 - test $TRAVIS_EVENT_TYPE = "push" && test $TRAVIS_BRANCH = "master" && ./deploy.sh

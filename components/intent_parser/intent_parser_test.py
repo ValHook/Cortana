@@ -259,7 +259,11 @@ class ParserTest(unittest.TestCase):
         expectation.activity_intent.update_when.CopyFrom(to_when(new_date_time))
         self.assertEqual(intent, expectation)
 
-        intent = self.sut.parse("!cortana date devoreur demain 21h 30/08 14h30", SUT_BUNDLE, SUT_NOW)
+        intent = self.sut.parse(
+            "!cortana date devoreur demain 21h 30/08 14h30",
+            SUT_BUNDLE,
+            SUT_NOW
+        )
         expectation = Intent()
         expectation.activity_intent.activity_id.type = ActivityID.Type.EATER_OF_WORLDS
         old_date_time = datetime(2020, 8, 13, hour=21, tzinfo=SUT_TIMEZONE)
@@ -346,13 +350,21 @@ class ParserTest(unittest.TestCase):
 
     def test_parse_milestone_intent(self):
         """Verifies milestone intents can properly be parsed."""
-        intent = self.sut.parse("!cortana milestone calus prestige save au boss", SUT_BUNDLE, SUT_NOW)
+        intent = self.sut.parse(
+            "!cortana milestone calus prestige save au boss",
+            SUT_BUNDLE,
+            SUT_NOW
+        )
         expectation = Intent()
         expectation.activity_intent.activity_id.type = ActivityID.Type.LEVIATHAN_PRESTIGE
         expectation.activity_intent.set_milestone = "Save au boss"
         self.assertEqual(intent, expectation)
 
-        intent = self.sut.parse("!cortana milestone couronne 31/8 21h45 reporté", SUT_BUNDLE, SUT_NOW)
+        intent = self.sut.parse(
+            "!cortana milestone couronne 31/8 21h45 reporté",
+            SUT_BUNDLE,
+            SUT_NOW
+        )
         expectation = Intent()
         expectation.activity_intent.activity_id.type = ActivityID.Type.CROWN_OF_SORROW
         date_time = datetime(2020, 8, 31, hour=21, minute=45, tzinfo=SUT_TIMEZONE)

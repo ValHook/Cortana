@@ -136,6 +136,12 @@ class ExecutorTest(unittest.TestCase):
         """Performs some cleanups at the end of each test."""
         self.storage_directory.cleanup()
 
+    def test_credits(self):
+        """Verifies help intents are properly executed."""
+        (feedback, images) = self.execute("!raid credits")
+        self.assertTrue(feedback.startswith("Mes créateurs sont"))
+        self.assertIsNone(images)
+
     def test_help(self):
         """Verifies help intents are properly executed."""
         (feedback, images) = self.execute("!raid help")
@@ -212,7 +218,7 @@ class ExecutorTest(unittest.TestCase):
         self.execute("!raid clearall")
         (feedback, images) = self.execute("!raid infoall")
         self.assertIsNone(images)
-        self.assertEqual(feedback, "Le planning est vierge.")
+        self.assertEqual(feedback, "Le planning est vide.")
 
     def test_info(self):
         """Verifies info intents are properly executed."""

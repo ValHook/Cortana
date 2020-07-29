@@ -3,7 +3,6 @@ import shutil
 from protos.api_bundle_pb2 import APIBundle
 from protos.schedule_pb2 import Schedule
 
-STORAGE_DIRECTORY = Path('destiny-bot')
 API_BUNDLE_FILE = Path('api_bundle.dat')
 PLANNING_FILE = Path('schedule.dat')
 
@@ -12,7 +11,7 @@ class Storage:
 
     def __init__(self, root_directory):
         try:
-            self.__root_path = Path(root_directory).joinpath(STORAGE_DIRECTORY)
+            self.__root_path = Path(root_directory)
             self.__root_path.mkdir(parents=True, exist_ok=True)
         except:
             raise IOError("Impossible d'initialiser le stockage.")

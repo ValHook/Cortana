@@ -11,11 +11,13 @@ from components.intent_executor.intent_executor import Executor
 from components.storage.storage import Storage
 from protos.schedule_pb2 import Schedule
 
-ROOT_DIRECTORY = Path(user_data_dir('WalOby Bot', 'WalOby'))
-TIMEZONE = tz.gettz('Europe/Paris')
-LOCALE = 'fr'
 BUNGIE_API_KEY = os.environ.get('BUNGIE_API_KEY', '')
 DISCORD_TOKEN = os.environ.get('DISCORD_TOKEN', '')
+ROOT_DIRECTORY = Path(user_data_dir('cortana-destiny-discord', 'WalOby')) \
+    .joinpath(DISCORD_TOKEN) \
+    .joinpath(BUNGIE_API_KEY)
+TIMEZONE = tz.gettz('Europe/Paris')
+LOCALE = 'fr'
 
 
 class Bot(discord.Client):
@@ -26,10 +28,16 @@ class Bot(discord.Client):
         self.__generator = Generator(TIMEZONE, LOCALE)
         self.__fetcher = Fetcher(BUNGIE_API_KEY)
         self.__parser = Parser(LOCALE)
+        self.has_been_ready_once = False
 
     async def on_ready(self):
         """Called when the bot is booted."""
-        print(f"Le bot est désormais opérationnel.\nNom d'utilisateur: {self.user.name}.")
+        if not self.has_been_ready_once:
+            self.has_been_ready_once = True
+            print("Le bot est désormais connecté.")
+            print(f"Nom d'utilisateur: {self.user.name}.")
+        else:
+            print("Le bot vient de se reconnecter.")
 
     async def on_message(self, message):
         """Called when a message is received. Wraps around |handle_message|."""
@@ -41,7 +49,7 @@ class Bot(discord.Client):
 
     async def handle_message(self, message):
         """Real message handler."""
-        if message.author == self.user or not message.content.startswith("!raid"):
+        if message.author == self.user or not message.content.startswith("!raid "):
             return
         print()
         print(message.guild.name)
@@ -117,5 +125,6 @@ if __name__ == "__main__":
     if not BUNGIE_API_KEY:
         raise ValueError("BUNGIE_API_KEY non configurée.")
     print("Démarrage du bot...")
+    print(f"Dossier de stoackge racine: {ROOT_DIRECTORY}")
     bot = Bot()
     bot.run(DISCORD_TOKEN)

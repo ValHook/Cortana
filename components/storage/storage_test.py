@@ -24,7 +24,9 @@ class StorageTest(unittest.TestCase):
 
     def test_no_permission(self):
         """Verifies the storage raises an IOError when encountering permission errors."""
-        self.assertRaises(IOError, storage.Storage, Path('/'))
+        s = storage.Storage(Path('/'))
+        self.assertRaises(IOError, s.write_schedule, Schedule())
+        self.assertRaises(IOError, s.write_api_bundle, APIBundle())
 
     def test_api_bundle_write_then_read(self):
         """Writes then reads an APIBundle to/from the storage."""

@@ -390,7 +390,11 @@ class ExecutorTest(unittest.TestCase):
         self.assertEqual(set(calus0_gamer_tags), set(calus2_gamer_tags))
 
         # Test surbooking
-        self.assertRaises(ValueError, self.execute, "!cortana backup jds 25/08 +cosa +hartog +kyzerjo")
+        self.assertRaises(
+            ValueError,
+            self.execute,
+            "!cortana backup jds 25/08 +cosa +hartog +kyzerjo"
+        )
         self.execute("!cortana backup jardin 25/08 -klaexy")
         schedule5 = self.storage.read_schedule()
         jds1 = schedule0.activities[3]
@@ -422,7 +426,9 @@ class ExecutorTest(unittest.TestCase):
     def test_insert(self):
         """Verifies insert intents are properly executed."""
         self.execute("!cortana dévoreur karibnkilla")
-        (feedback, images) = self.execute("!cortana couronne jeudi 19h cosa58 Walnut Waffle omegagip")
+        (feedback, images) = self.execute(
+            "!cortana couronne jeudi 19h cosa58 Walnut Waffle omegagip"
+        )
         schedule = self.storage.read_schedule()
         self.assertEqual(len(schedule.activities), 7)
         devoreur = schedule.activities[-2]

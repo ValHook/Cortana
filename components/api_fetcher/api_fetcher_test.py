@@ -13,7 +13,7 @@ class FetcherTest(unittest.TestCase):
 
     def setUp(self):
         """Set up method."""
-        api_key = os.environ.get('BUNGIE_API_KEY', '')
+        api_key = os.environ.get('CORTANA_BUNGIE_API_KEY', '')
         self.sut = api_fetcher.Fetcher(api_key)
 
     def test_fetch(self):

@@ -58,11 +58,11 @@ class Executor:
             return "Mes créateurs sont Walnut & Oby ❤️", None
 
         if global_intent.HasField('help'):
-            # !raid help
+            # !cortana help
             help_str = "Guide d'utilisation:\n" \
-                "Le bot gère et génère les affiches d'un planning d'activités.\n" \
-                "Il connaît les noms et les niveaux d'expérience des joueurs de la FE11 " \
-                "et des clans alliés.\nCe guide détaille les commandes pour utiliser le bot.\n" \
+                "Cortana gère et génère les affiches d'un planning d'activités Destiny.\n" \
+                "Elle connaît les noms et les niveaux d'expérience des joueurs de la FE11 " \
+                "et des clans alliés.\nCe guide détaille les commandes pour utiliser Cortana.\n" \
                 "Dans toutes les commandes détaillées ci-dessous il faut savoir que: \n\n" \
                 "-[nom activité] " \
                 "doit être remplacé par un vrai nom, style calus, fleche, fleau, jds, couronne, " \
@@ -80,41 +80,44 @@ class Executor:
                 "- [date] indique une date obligatoire. Par exemple pour la commande de " \
                 "modification d'une date d'activité.\n\n" \
                 "- [gamer_tags] indique une liste de gamer tags (au minimum 1 gamer tag).\n" \
-                "Le bot est capable de comprendre et corriger les gamer tags même si ils sont mal" \
-                " ortographiés. (e.g. cosa, croptus, darklight, franstuck, hartok etc...)\n\n\n" \
+                "Cortana est capable de comprendre et corriger " \
+                "les gamer tags même si ils sont mal ortographiés. " \
+                "(e.g. cosa, croptus, darklight, franstuck, hartok etc...)\n\n\n" \
                 "Liste des commandes: \n\n" \
-                "!raid [nom activité] (date) [gamer_tag1, ...] => Créé/modifie une escouade pour/" \
-                "d'une activité. Précédez un gamer tag par '-' pour signaler que le joueur doit" \
-                " être retiré et non ajouté.\n\n" \
-                "!raid backup [nom activité] (date) [gamer_tag1, ...] => Pareil que la commande " \
-                "du dessus mais pour gérer les remplaçants.\n\n" \
-                "!raid date [nom activité] (ancienne date) [nouvelle date] => Ajoute ou modifie " \
-                "une date à une activité.\n\n" \
-                "!raid milestone [nom activité] (date) => Précise une save ou un statut pour " \
-                "l'activité concernée. (e.g. !raid milestone jds save au boss, " \
-                "!raid milestone leviathan prestige reporté)." \
-                "!raid finish [nom activité] (date) => Marque l'activité comme terminée.\n\n" \
-                "!raid info [nom activité] (date) => Affiche les détails de l'activité dans un " \
-                "format texte.\n\n" \
-                "!raid clear [nom activité] (date) => Supprime l'activité du planning.\n\n" \
-                "!raid images => Génère les affiches pour toutes les activités du planning.\n\n" \
-                "!raid help => Affiche le guide d'utilisation.\n\n" \
-                "!raid infoall => Affiche tout le planning dans un format texte.\n\n" \
-                "!raid clearpast => Supprime toutes les activités des semaines précédentes.\n\n" \
-                "!raid clearall => Supprime toutes les activités.\n\n" \
-                "!raid sync => Synchronise la liste des joueurs et leurs stats.\n" \
+                "!cortana [nom activité] (date) [gamer_tag1, ...] => Créé/modifie une escouade " \
+                "pour/d'une activité. Précédez un gamer tag par '-' pour signaler que le joueur " \
+                "doit être retiré et non ajouté.\n\n" \
+                "!cortana backup [nom activité] (date) [gamer_tag1, ...] => Pareil que la " \
+                "commande du dessus mais pour gérer les remplaçants.\n\n" \
+                "!cortana date [nom activité] (ancienne date) [nouvelle date] => Ajoute ou " \
+                "modifie une date à une activité.\n\n" \
+                "!cortana milestone [nom activité] (date) => Précise une save ou un statut pour " \
+                "l'activité concernée. (e.g. !cortana milestone jds save au boss, " \
+                "!cortana milestone leviathan prestige reporté)." \
+                "!cortana finish [nom activité] (date) => Marque l'activité comme terminée.\n\n" \
+                "!cortana info [nom activité] (date) => Affiche les détails de l'activité dans " \
+                "un format texte.\n\n" \
+                "!cortana clear [nom activité] (date) => Supprime l'activité du planning.\n\n" \
+                "!cortana images => Génère les affiches pour toutes les activités " \
+                "du planning.\n\n" \
+                "!cortana help => Affiche le guide d'utilisation.\n\n" \
+                "!cortana infoall => Affiche tout le planning dans un format texte.\n\n" \
+                "!cortana clearpast => Supprime toutes les activités des semaines " \
+                "précédentes.\n\n" \
+                "!cortana clearall => Supprime toutes les activités.\n\n" \
+                "!cortana sync => Synchronise la liste des joueurs et leurs stats.\n" \
                 "Utile quand des nouveaux membres rejoignent le clan.\n" \
-                "Utile pour que le bot soit au courant des changements de niveaux d'expérience " \
+                "Utile pour que Cortana soit au courant des changements de niveaux d'expérience " \
                 "des joueurs.\nAttention toutefois, les changements de niveaux d'expérience ne " \
                 "sont pas directement reflétés dans les affiches. " \
                 "Ils seront appliqués à partir des prochaines commandes (nouvelle création " \
                 "d'activité ou mise à jour d'escouade).\n\n" \
-                "!raid lastsync => Affiche la dernière date de synchronisation.\n\n" \
-                "!raid credits => Affiche les noms de mes créateurs."
+                "!cortana lastsync => Affiche la dernière date de synchronisation.\n\n" \
+                "!cortana credits => Affiche les noms de mes créateurs."
             return help_str, None
 
         if global_intent.HasField('generate_images'):
-            # !raid images
+            # !cortana images
             schedule = self.__storage.read_schedule()
             images = self.__img_generator.generate_images(schedule)
             if len(images) == 0:
@@ -122,24 +125,24 @@ class Executor:
             return "Affiches pour les activités en cours:", images
 
         if global_intent.HasField('sync_bundle'):
-            # !raid sync
+            # !cortana sync
             bundle = self.__api_fetcher.fetch(now)
             self.__storage.write_api_bundle(bundle)
             return "Joueurs et niveaux d'experiences synchronisés.", None
 
         if global_intent.HasField('get_last_bundle_sync_datetime'):
-            # !raid lastsync
+            # !cortana lastsync
             bundle = self.__storage.read_api_bundle()
             return "Dernière synchronisation: " + bundle.last_sync_datetime, None
 
         if global_intent.HasField('clear_all'):
-            # !raid clearall
+            # !cortana clearall
             schedule = Schedule()
             self.__storage.write_schedule(schedule)
             return "Toutes les activités du planning sont désormais supprimées.", None
 
         if global_intent.HasField('clear_past'):
-            # !raid clearpast
+            # !cortana clearpast
             schedule = self.__storage.read_schedule()
             threshold = dateparser.parse(
                 CLEARPAST_WEEKDAY,
@@ -160,7 +163,7 @@ class Executor:
             return feedback, None
 
         if global_intent.HasField('info_all'):
-            # !raid infoall
+            # !cortana infoall
             schedule = self.__storage.read_schedule()
             return str(schedule) if len(schedule.activities) > 0 else "Le planning est vide.", None
 
@@ -175,21 +178,21 @@ class Executor:
         schedule = self.__storage.read_schedule()
         activity_id = activity_intent.activity_id
         if activity_intent.HasField('update_when'):
-            # !raid date
+            # !cortana date
             activity = self.find_activity_with_id(activity_id, schedule)
             activity.id.when.CopyFrom(activity_intent.update_when)
             self.__storage.write_schedule(schedule)
             return "Date mise à jour:\n" + str(activity.id)
 
         if activity_intent.HasField('mark_finished'):
-            # !raid finish [activity] (date)
+            # !cortana finish [activity] (date)
             activity = self.find_activity_with_id(activity_id, schedule)
             activity.state = Activity.State.FINISHED
             self.__storage.write_schedule(schedule)
             return "Good job!\nActivité marquée comme terminée:\n" + str(activity.id)
 
         if activity_intent.HasField('set_milestone'):
-            # !raid milestone [activity] (date)
+            # !cortana milestone [activity] (date)
             activity = self.find_activity_with_id(activity_id, schedule)
             activity.state = Activity.State.MILESTONED
             activity.milestone = activity_intent.set_milestone
@@ -197,19 +200,19 @@ class Executor:
             return "Étape mise à jour (" + activity.milestone + "):\n" + str(activity.id)
 
         if activity_intent.HasField('info'):
-            # !raid info
+            # !cortana info
             activity = self.find_activity_with_id(activity_id, schedule)
             return str(activity)
 
         if activity_intent.HasField('clear'):
-            # !raid clear [activity] (date)
+            # !cortana clear [activity] (date)
             activity = self.find_activity_with_id(activity_id, schedule)
             schedule.activities.remove(activity)
             self.__storage.write_schedule(schedule)
             return "Activité supprimée:\n" + str(activity.id)
 
         if activity_intent.HasField('upsert_squad'):
-            # !raid (backup) [activity] (date) [players]
+            # !cortana (backup) [activity] (date) [players]
             feedback = "Escouade mise à jour"
             try:
                 activity = self.find_activity_with_id(activity_id, schedule)

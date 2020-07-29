@@ -77,8 +77,8 @@ class Parser:
             raise ValueError("API Bundle vide")
         words = re.split(r"\s+", message)
         next_word = words.pop(0)
-        if next_word != '!raid':
-            raise ValueError("La commande doit commencer par !raid")
+        if next_word != '!cortana':
+            raise ValueError("La commande doit commencer par !cortana")
         next_word = words.pop(0)
 
         if next_word == "credits":
@@ -113,7 +113,7 @@ class Parser:
 
     def parse_credits_intent(self, initial_words):
         """
-        :param initial_words: The words after !raid credits.
+        :param initial_words: The words after !cortana credits.
         :return: A credits intent.
         :raises: If the words are not empty.
         """
@@ -124,7 +124,7 @@ class Parser:
 
     def parse_help_intent(self, initial_words):
         """
-        :param initial_words: The words after !raid help.
+        :param initial_words: The words after !cortana help.
         :return: A help intent.
         :raises: If the words are not empty.
         """
@@ -135,7 +135,7 @@ class Parser:
 
     def parse_infoall_intent(self, initial_words):
         """
-        :param initial_words: The words after !raid infoall.
+        :param initial_words: The words after !cortana infoall.
         :return: A help intent.
         :raises: If the words are not empty.
         """
@@ -146,7 +146,7 @@ class Parser:
 
     def parse_clearall_intent(self, initial_words):
         """
-        :param initial_words: The words after !raid clearall.
+        :param initial_words: The words after !cortana clearall.
         :return: A clear all intent.
         :raises: If the words are not empty.
         """
@@ -157,7 +157,7 @@ class Parser:
 
     def parse_clearpast_intent(self, initial_words):
         """
-        :param initial_words: The words after !raid clearpast.
+        :param initial_words: The words after !cortana clearpast.
         :return: A clear past intent.
         :raises: If the words are not empty.
         """
@@ -168,7 +168,7 @@ class Parser:
 
     def parse_sync_intent(self, initial_words):
         """
-        :param initial_words: The words after !raid sync.
+        :param initial_words: The words after !cortana sync.
         :return: A sync intent.
         :raises: If the words are not empty.
         """
@@ -179,7 +179,7 @@ class Parser:
 
     def parse_lastsync_intent(self, initial_words):
         """
-        :paramn initial_words: The words after !raid lastsync.
+        :paramn initial_words: The words after !cortana lastsync.
         :return: A lastsync intent.
         :raises: If the words are not empty.
         """
@@ -190,7 +190,7 @@ class Parser:
 
     def parse_images_intent(self, initial_words):
         """
-        :param initial_words: The words after !raid images.
+        :param initial_words: The words after !cortana images.
         :return: An image generation intent.
         :raises: If the words are not empty.
         """
@@ -201,7 +201,7 @@ class Parser:
 
     def parse_update_datetime_intent(self, initial_words, now):
         """
-        :param initial_words: The words after !raid date.
+        :param initial_words: The words after !cortana date.
         :param now: Now as a datetime.
         :return: A datetime update intent.
         :raises: If the words are not in the format (old_datetime) [new_datetime].
@@ -228,7 +228,7 @@ class Parser:
 
     def parse_update_milestone_intent(self, initial_words, now):
         """
-        :param initial_words: The words after !raid milestone.
+        :param initial_words: The words after !cortana milestone.
         :param now: Now as a datetime.
         :return: A milestone update intent.
         :raises: If the words are not in the format [activity_type] (datetime) [milestone].
@@ -253,7 +253,7 @@ class Parser:
 
     def parse_finish_intent(self, initial_words, now):
         """
-        :param initial_words: The words after !raid finish.
+        :param initial_words: The words after !cortana finish.
         :param now: Now as a datetime.
         :return: A finish marking intent.
         :raises: If the words are not in the format [activity_type] (datetime).
@@ -277,7 +277,7 @@ class Parser:
 
     def parse_info_intent(self, initial_words, now):
         """
-        :param initial_words: The words after !raid info.
+        :param initial_words: The words after !cortana info.
         :param now: Now as a datetime.
         :return: An activity removal intent.
         :raises: If the words are not in the format [activity_type] (datetime).
@@ -301,7 +301,7 @@ class Parser:
 
     def parse_clear_intent(self, initial_words, now):
         """
-        :param initial_words: The words after !raid clear.
+        :param initial_words: The words after !cortana clear.
         :param now: Now as a datetime.
         :return: An activity removal intent.
         :raises: If the words are not in the format [activity_type] (datetime).
@@ -325,7 +325,7 @@ class Parser:
 
     def parse_upsert_squad_intent(self, initial_words, backup, api_bundle, now):
         """
-        :param initial_words: The words after !raid or !raid backup.
+        :param initial_words: The words after !cortana or !cortana backup.
         :param backup: A boolean telling whether this upsert squad intent must be for substitutes.
         :param api_bundle: The API Bundle used to resolve gamer tags and experience levels.
         :param now: Now as a datetime.

@@ -180,77 +180,77 @@ class ParserTest(unittest.TestCase):
 
     def test_parse_credits_intent(self):
         """Verifies credits intents can properly be parsed."""
-        intent = self.sut.parse("!raid credits", SUT_BUNDLE, SUT_NOW)
+        intent = self.sut.parse("!cortana credits", SUT_BUNDLE, SUT_NOW)
         expectation = Intent()
         expectation.global_intent.credits = True
         self.assertEqual(intent, expectation)
 
     def test_parse_help_intent(self):
         """Verifies help intents can properly be parsed."""
-        intent = self.sut.parse("!raid help", SUT_BUNDLE, SUT_NOW)
+        intent = self.sut.parse("!cortana help", SUT_BUNDLE, SUT_NOW)
         expectation = Intent()
         expectation.global_intent.help = True
         self.assertEqual(intent, expectation)
 
     def test_parse_infoall_intent(self):
         """Verifies infoall intents can properly be parsed."""
-        intent = self.sut.parse("!raid infoall", SUT_BUNDLE, SUT_NOW)
+        intent = self.sut.parse("!cortana infoall", SUT_BUNDLE, SUT_NOW)
         expectation = Intent()
         expectation.global_intent.info_all = True
         self.assertEqual(intent, expectation)
 
     def test_parse_clearall_intent(self):
         """Verifies clear all intents can properly be parsed."""
-        intent = self.sut.parse("!raid clearall", SUT_BUNDLE, SUT_NOW)
+        intent = self.sut.parse("!cortana clearall", SUT_BUNDLE, SUT_NOW)
         expectation = Intent()
         expectation.global_intent.clear_all = True
         self.assertEqual(intent, expectation)
 
     def test_parse_clearpast_intent(self):
         """Verifies clear past intents can properly be parsed."""
-        intent = self.sut.parse("!raid clearpast", SUT_BUNDLE, SUT_NOW)
+        intent = self.sut.parse("!cortana clearpast", SUT_BUNDLE, SUT_NOW)
         expectation = Intent()
         expectation.global_intent.clear_past = True
         self.assertEqual(intent, expectation)
 
     def test_parse_sync_intent(self):
         """Verifies bundle sync intents can properly be parsed."""
-        intent = self.sut.parse("!raid sync", SUT_BUNDLE, SUT_NOW)
+        intent = self.sut.parse("!cortana sync", SUT_BUNDLE, SUT_NOW)
         expectation = Intent()
         expectation.global_intent.sync_bundle = True
         self.assertEqual(intent, expectation)
 
     def test_parse_lastsync_intent(self):
         """Verifies last sync get intents can properly be parsed."""
-        intent = self.sut.parse("!raid lastsync", SUT_BUNDLE, SUT_NOW)
+        intent = self.sut.parse("!cortana lastsync", SUT_BUNDLE, SUT_NOW)
         expectation = Intent()
         expectation.global_intent.get_last_bundle_sync_datetime = True
         self.assertEqual(intent, expectation)
 
     def test_parse_images_intent(self):
         """Verifies image generation intents can properly be parsed."""
-        intent = self.sut.parse("!raid images", SUT_BUNDLE, SUT_NOW)
+        intent = self.sut.parse("!cortana images", SUT_BUNDLE, SUT_NOW)
         expectation = Intent()
         expectation.global_intent.generate_images = True
         self.assertEqual(intent, expectation)
 
     def test_parse_datetime_intent(self):
         """Verifies date time update intents can properly be parsed."""
-        intent = self.sut.parse("!raid date fureur 25/08 19h", SUT_BUNDLE, SUT_NOW)
+        intent = self.sut.parse("!cortana date fureur 25/08 19h", SUT_BUNDLE, SUT_NOW)
         expectation = Intent()
         expectation.activity_intent.activity_id.type = ActivityID.Type.WRATH_OF_THE_MACHINE
         new_date_time = datetime(2020, 8, 25, hour=19, tzinfo=SUT_TIMEZONE)
         expectation.activity_intent.update_when.CopyFrom(to_when(new_date_time))
         self.assertEqual(intent, expectation)
 
-        intent = self.sut.parse("!raid date caveau vendredi", SUT_BUNDLE, SUT_NOW)
+        intent = self.sut.parse("!cortana date caveau vendredi", SUT_BUNDLE, SUT_NOW)
         expectation = Intent()
         expectation.activity_intent.activity_id.type = ActivityID.Type.VAULT_OF_GLASS
         new_date_time = datetime(2020, 8, 14)
         expectation.activity_intent.update_when.CopyFrom(to_when(new_date_time))
         self.assertEqual(intent, expectation)
 
-        intent = self.sut.parse("!raid date fleau samedi samedi 19h", SUT_BUNDLE, SUT_NOW)
+        intent = self.sut.parse("!cortana date fleau samedi samedi 19h", SUT_BUNDLE, SUT_NOW)
         expectation = Intent()
         expectation.activity_intent.activity_id.type = ActivityID.Type.SCOURGE_OF_THE_PAST
         old_date_time = datetime(2020, 8, 15)
@@ -259,7 +259,7 @@ class ParserTest(unittest.TestCase):
         expectation.activity_intent.update_when.CopyFrom(to_when(new_date_time))
         self.assertEqual(intent, expectation)
 
-        intent = self.sut.parse("!raid date devoreur demain 21h 30/08 14h30", SUT_BUNDLE, SUT_NOW)
+        intent = self.sut.parse("!cortana date devoreur demain 21h 30/08 14h30", SUT_BUNDLE, SUT_NOW)
         expectation = Intent()
         expectation.activity_intent.activity_id.type = ActivityID.Type.EATER_OF_WORLDS
         old_date_time = datetime(2020, 8, 13, hour=21, tzinfo=SUT_TIMEZONE)
@@ -268,7 +268,7 @@ class ParserTest(unittest.TestCase):
         expectation.activity_intent.update_when.CopyFrom(to_when(new_date_time))
         self.assertEqual(intent, expectation)
 
-        intent = self.sut.parse("!raid date devoreur hier demain", SUT_BUNDLE, SUT_NOW)
+        intent = self.sut.parse("!cortana date devoreur hier demain", SUT_BUNDLE, SUT_NOW)
         expectation = Intent()
         expectation.activity_intent.activity_id.type = ActivityID.Type.EATER_OF_WORLDS
         old_date_time = datetime(2020, 8, 11)
@@ -277,7 +277,7 @@ class ParserTest(unittest.TestCase):
         expectation.activity_intent.update_when.CopyFrom(to_when(new_date_time))
         self.assertEqual(intent, expectation)
 
-        intent = self.sut.parse("!raid date devoreur hier demain 22h05", SUT_BUNDLE, SUT_NOW)
+        intent = self.sut.parse("!cortana date devoreur hier demain 22h05", SUT_BUNDLE, SUT_NOW)
         expectation = Intent()
         expectation.activity_intent.activity_id.type = ActivityID.Type.EATER_OF_WORLDS
         old_date_time = datetime(2020, 8, 11)
@@ -286,7 +286,7 @@ class ParserTest(unittest.TestCase):
         expectation.activity_intent.update_when.CopyFrom(to_when(new_date_time))
         self.assertEqual(intent, expectation)
 
-        intent = self.sut.parse("!raid date jardin du salut 22/08 23/08", SUT_BUNDLE, SUT_NOW)
+        intent = self.sut.parse("!cortana date jardin du salut 22/08 23/08", SUT_BUNDLE, SUT_NOW)
         expectation = Intent()
         expectation.activity_intent.activity_id.type = ActivityID.Type.GARDEN_OF_SALVATION
         old_date_time = datetime(2020, 8, 22)
@@ -295,7 +295,7 @@ class ParserTest(unittest.TestCase):
         expectation.activity_intent.update_when.CopyFrom(to_when(new_date_time))
         self.assertEqual(intent, expectation)
 
-        intent = self.sut.parse("!raid date dernier voeu 20/08 16h45 19/08", SUT_BUNDLE, SUT_NOW)
+        intent = self.sut.parse("!cortana date dernier voeu 20/08 16h45 19/08", SUT_BUNDLE, SUT_NOW)
         expectation = Intent()
         expectation.activity_intent.activity_id.type = ActivityID.Type.LAST_WISH
         old_date_time = datetime(2020, 8, 20, hour=16, minute=45, tzinfo=SUT_TIMEZONE)
@@ -305,7 +305,7 @@ class ParserTest(unittest.TestCase):
         self.assertEqual(intent, expectation)
 
         intent = self.sut.parse(
-            "!raid date dernier voeu 20/08 16h45 19/08 21h30",
+            "!cortana date dernier voeu 20/08 16h45 19/08 21h30",
             SUT_BUNDLE,
             SUT_NOW
         )
@@ -317,7 +317,7 @@ class ParserTest(unittest.TestCase):
         expectation.activity_intent.update_when.CopyFrom(to_when(new_date_time))
         self.assertEqual(intent, expectation)
 
-        intent = self.sut.parse("!raid date dernier voeu vendredi vendredi", SUT_BUNDLE, SUT_NOW)
+        intent = self.sut.parse("!cortana date dernier voeu vendredi vendredi", SUT_BUNDLE, SUT_NOW)
         expectation = Intent()
         expectation.activity_intent.activity_id.type = ActivityID.Type.LAST_WISH
         old_date_time = datetime(2020, 8, 14)
@@ -326,7 +326,7 @@ class ParserTest(unittest.TestCase):
         expectation.activity_intent.update_when.CopyFrom(to_when(new_date_time))
         self.assertEqual(intent, expectation)
 
-        intent = self.sut.parse("!raid date dernier voeu 20/8 20/8 16h", SUT_BUNDLE, SUT_NOW)
+        intent = self.sut.parse("!cortana date dernier voeu 20/8 20/8 16h", SUT_BUNDLE, SUT_NOW)
         expectation = Intent()
         expectation.activity_intent.activity_id.type = ActivityID.Type.LAST_WISH
         old_date_time = datetime(2020, 8, 20)
@@ -335,7 +335,7 @@ class ParserTest(unittest.TestCase):
         expectation.activity_intent.update_when.CopyFrom(to_when(new_date_time))
         self.assertEqual(intent, expectation)
 
-        intent = self.sut.parse("!raid date calus 9/8 9/8 23h", SUT_BUNDLE, SUT_NOW)
+        intent = self.sut.parse("!cortana date calus 9/8 9/8 23h", SUT_BUNDLE, SUT_NOW)
         expectation = Intent()
         expectation.activity_intent.activity_id.type = ActivityID.Type.LEVIATHAN
         old_date_time = datetime(2020, 8, 9)
@@ -346,13 +346,13 @@ class ParserTest(unittest.TestCase):
 
     def test_parse_milestone_intent(self):
         """Verifies milestone intents can properly be parsed."""
-        intent = self.sut.parse("!raid milestone calus prestige save au boss", SUT_BUNDLE, SUT_NOW)
+        intent = self.sut.parse("!cortana milestone calus prestige save au boss", SUT_BUNDLE, SUT_NOW)
         expectation = Intent()
         expectation.activity_intent.activity_id.type = ActivityID.Type.LEVIATHAN_PRESTIGE
         expectation.activity_intent.set_milestone = "Save au boss"
         self.assertEqual(intent, expectation)
 
-        intent = self.sut.parse("!raid milestone couronne 31/8 21h45 reporté", SUT_BUNDLE, SUT_NOW)
+        intent = self.sut.parse("!cortana milestone couronne 31/8 21h45 reporté", SUT_BUNDLE, SUT_NOW)
         expectation = Intent()
         expectation.activity_intent.activity_id.type = ActivityID.Type.CROWN_OF_SORROW
         date_time = datetime(2020, 8, 31, hour=21, minute=45, tzinfo=SUT_TIMEZONE)
@@ -361,7 +361,7 @@ class ParserTest(unittest.TestCase):
         self.assertEqual(intent, expectation)
 
         intent = self.sut.parse(
-            "!raid milestone dernier voeu demain save étape 2",
+            "!cortana milestone dernier voeu demain save étape 2",
             SUT_BUNDLE,
             SUT_NOW
         )
@@ -374,13 +374,13 @@ class ParserTest(unittest.TestCase):
 
     def test_parse_finish_intent(self):
         """Verifies finish intents can properly be parsed."""
-        intent = self.sut.parse("!raid finish jds", SUT_BUNDLE, SUT_NOW)
+        intent = self.sut.parse("!cortana finish jds", SUT_BUNDLE, SUT_NOW)
         expectation = Intent()
         expectation.activity_intent.activity_id.type = ActivityID.Type.GARDEN_OF_SALVATION
         expectation.activity_intent.mark_finished = True
         self.assertEqual(intent, expectation)
 
-        intent = self.sut.parse("!raid finish flèche 5/9 18h", SUT_BUNDLE, SUT_NOW)
+        intent = self.sut.parse("!cortana finish flèche 5/9 18h", SUT_BUNDLE, SUT_NOW)
         expectation = Intent()
         expectation.activity_intent.activity_id.type = ActivityID.Type.SPIRE_OF_STARS
         date_time = datetime(2020, 9, 5, hour=18, tzinfo=SUT_TIMEZONE)
@@ -390,7 +390,7 @@ class ParserTest(unittest.TestCase):
 
     def test_parse_info_intent(self):
         """Verifies info intents can properly be parsed."""
-        intent = self.sut.parse("!raid info dernier voeu", SUT_BUNDLE, SUT_NOW)
+        intent = self.sut.parse("!cortana info dernier voeu", SUT_BUNDLE, SUT_NOW)
         expectation = Intent()
         expectation.activity_intent.activity_id.type = ActivityID.Type.LAST_WISH
         expectation.activity_intent.info = True
@@ -398,13 +398,13 @@ class ParserTest(unittest.TestCase):
 
     def test_parse_clear_intent(self):
         """Verifies clear intents can properly be parsed."""
-        intent = self.sut.parse("!raid clear couronne", SUT_BUNDLE, SUT_NOW)
+        intent = self.sut.parse("!cortana clear couronne", SUT_BUNDLE, SUT_NOW)
         expectation = Intent()
         expectation.activity_intent.activity_id.type = ActivityID.Type.CROWN_OF_SORROW
         expectation.activity_intent.clear = True
         self.assertEqual(intent, expectation)
 
-        intent = self.sut.parse("!raid clear fleau 12/9 21h30", SUT_BUNDLE, SUT_NOW)
+        intent = self.sut.parse("!cortana clear fleau 12/9 21h30", SUT_BUNDLE, SUT_NOW)
         expectation = Intent()
         expectation.activity_intent.activity_id.type = ActivityID.Type.SCOURGE_OF_THE_PAST
         date_time = datetime(2020, 9, 12, hour=21, minute=30, tzinfo=SUT_TIMEZONE)
@@ -415,7 +415,7 @@ class ParserTest(unittest.TestCase):
     def test_parse_create_squad_intent(self):
         """Verifies create squad intents with main players can properly be parsed."""
         intent = self.sut.parse(
-            "!raid jds cosa croptus Walnut Waffle darklight hartog Franstuk",
+            "!cortana jds cosa croptus Walnut Waffle darklight hartog Franstuk",
             SUT_BUNDLE,
             SUT_NOW
         )
@@ -443,7 +443,7 @@ class ParserTest(unittest.TestCase):
         self.assertEqual(intent, expectation)
 
         intent = self.sut.parse(
-            "!raid fleau demain 19h Oby1Chik live x gamling",
+            "!cortana fleau demain 19h Oby1Chik live x gamling",
             SUT_BUNDLE,
             SUT_NOW
         )
@@ -461,7 +461,7 @@ class ParserTest(unittest.TestCase):
         self.assertEqual(intent, expectation)
 
         intent = self.sut.parse(
-            "!raid couronne 15/08 snipro pistache espita Jezebell NaughtySOft",
+            "!cortana couronne 15/08 snipro pistache espita Jezebell NaughtySOft",
             SUT_BUNDLE,
             SUT_NOW
         )
@@ -485,7 +485,7 @@ class ParserTest(unittest.TestCase):
         self.assertEqual(intent, expectation)
 
         intent = self.sut.parse(
-            "!raid dernier veu dimanche 14h45 affectevil xxmariexx duality cobra FranckRabbit",
+            "!cortana dernier veu dimanche 14h45 affectevil xxmariexx duality cobra FranckRabbit",
             SUT_BUNDLE,
             SUT_NOW
         )
@@ -511,7 +511,7 @@ class ParserTest(unittest.TestCase):
     def test_parse_update_squad_intent(self):
         """Verifies update squad intents with main players can properly be parsed."""
         intent = self.sut.parse(
-            "!raid vœu +cosa -croptus -klaexy +darklight -hartog +Franstuk -ObyChick +kyzerjo",
+            "!cortana vœu +cosa -croptus -klaexy +darklight -hartog +Franstuk -ObyChick +kyzerjo",
             SUT_BUNDLE,
             SUT_NOW
         )
@@ -545,7 +545,7 @@ class ParserTest(unittest.TestCase):
         self.assertEqual(intent, expectation)
 
         intent = self.sut.parse(
-            "!raid calus prestige demain 19h +Oby1Chik -live x gamling",
+            "!cortana calus prestige demain 19h +Oby1Chik -live x gamling",
             SUT_BUNDLE,
             SUT_NOW
         )
@@ -563,7 +563,7 @@ class ParserTest(unittest.TestCase):
         self.assertEqual(intent, expectation)
 
         intent = self.sut.parse(
-            "!raid flèche prestige 30/08 -snipro -pistache espita -Jezebell +NaughtySOft -cosa",
+            "!cortana flèche prestige 30/08 -snipro -pistache espita -Jezebell +NaughtySOft -cosa",
             SUT_BUNDLE,
             SUT_NOW
         )
@@ -590,7 +590,7 @@ class ParserTest(unittest.TestCase):
         self.assertEqual(intent, expectation)
 
         intent = self.sut.parse(
-            "!raid dévoreur dimanche 20h45 SuperFayaChonch +xxmariexx -duality cobra -carnage",
+            "!cortana dévoreur dimanche 20h45 SuperFayaChonch +xxmariexx -duality cobra -carnage",
             SUT_BUNDLE,
             SUT_NOW
         )
@@ -614,7 +614,7 @@ class ParserTest(unittest.TestCase):
         self.assertEqual(intent, expectation)
 
         intent = self.sut.parse(
-            "!raid backup calus prestige samedi 21h30 affectevil bab x waza",
+            "!cortana backup calus prestige samedi 21h30 affectevil bab x waza",
             SUT_BUNDLE,
             SUT_NOW
         )
@@ -632,7 +632,7 @@ class ParserTest(unittest.TestCase):
         self.assertEqual(intent, expectation)
 
         intent = self.sut.parse(
-            "!raid backup vœu +darklucifel -croptus -strikers frwyx -hartog Franstuk +kyzerjo",
+            "!cortana backup vœu +darklucifel -croptus -strikers frwyx -hartog Franstuk +kyzerjo",
             SUT_BUNDLE,
             SUT_NOW
         )

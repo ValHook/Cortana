@@ -70,8 +70,8 @@ class Executor:
                 "couronne du malheur, flèche prestige, flèche d'étoiles prestige marchent aussi)." \
                 " Les fautes d'orthographe sont aussi gérées dans la limite du raisonnable. " \
                 "(e.g. kalus, fleo, devorer, etc... sont aussi supportés).\n\n" \
-                "- (date) peut être remplacé par une date ou ignorée. Plusieurs formats de date " \
-                "sont gérés (e.g. mercredi, 17/08, dimanche 21h, demain 22h30, 20/8 20h30, "\
+                "- (date) indique une date optionnelle. Plusieurs formats de " \
+                "date sont gérés (e.g. mercredi, 17/08, dimanche 21h, demain 22h30, 20/8 20h30, "\
                 "etc...)\nLa date est utile pour 2 cas de figures:\n" \
                 "1) Afficher la date sur les affiches.\n" \
                 "2) Différencier deux activités du même type dans une commande.\n" \

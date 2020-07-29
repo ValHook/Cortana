@@ -26,9 +26,9 @@ before_install:
 
 # Run tests.
 script:
-- ./check_lint.sh
-- ./check_tests.sh
+- test $TRAVIS_EVENT_TYPE = "push" && test $TRAVIS_BRANCH = "master" || ./check_lint.sh
+- test $TRAVIS_EVENT_TYPE = "push" && test $TRAVIS_BRANCH = "master" || ./check_tests.sh
 
 # Deploy iff the cause of this build is a push to master (after a pull request got merged).
 after_success:
-  - (test $TRAVIS_EVENT_TYPE = "push" && test $TRAVIS_BRANCH = "master") && ./deploy.sh
+- test $TRAVIS_EVENT_TYPE = "push" && test $TRAVIS_BRANCH = "master" && ./deploy.sh
